@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="source_code">
+      <UniqueIdentifier>{ebf06b8f-e361-4d27-9d22-ddf2301eda91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="supporting_files">
+      <UniqueIdentifier>{d4c63fc2-c76f-479e-891d-910b8bf8e555}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="game_logic.h">
+      <Filter>source_code</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="glad.c">
+      <Filter>supporting_files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>source_code</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
