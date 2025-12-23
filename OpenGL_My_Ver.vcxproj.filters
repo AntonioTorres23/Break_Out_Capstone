@@ -12,12 +12,21 @@
     <ClInclude Include="game_logic.h">
       <Filter>source_code</Filter>
     </ClInclude>
+    <ClInclude Include="process_shader.h">
+      <Filter>source_code</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
       <Filter>supporting_files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
+      <Filter>source_code</Filter>
+    </ClCompile>
+    <ClCompile Include="game_logic.cpp">
+      <Filter>source_code</Filter>
+    </ClCompile>
+    <ClCompile Include="process_shader.cpp">
       <Filter>source_code</Filter>
     </ClCompile>
   </ItemGroup>
