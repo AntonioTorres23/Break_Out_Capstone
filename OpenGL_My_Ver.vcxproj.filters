@@ -15,6 +15,9 @@
     <ClInclude Include="process_shader.h">
       <Filter>source_code</Filter>
     </ClInclude>
+    <ClInclude Include="process_texture.h">
+      <Filter>source_code</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -27,6 +30,9 @@
       <Filter>source_code</Filter>
     </ClCompile>
     <ClCompile Include="process_shader.cpp">
+      <Filter>source_code</Filter>
+    </ClCompile>
+    <ClCompile Include="process_texture.cpp">
       <Filter>source_code</Filter>
     </ClCompile>
   </ItemGroup>

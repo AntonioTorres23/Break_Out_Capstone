@@ -21,12 +21,14 @@
   <ItemGroup>
     <ClInclude Include="game_logic.h" />
     <ClInclude Include="process_shader.h" />
+    <ClInclude Include="process_texture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game_logic.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="process_shader.cpp" />
+    <ClCompile Include="process_texture.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
