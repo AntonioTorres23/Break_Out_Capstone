@@ -26,7 +26,7 @@ public: // where all publicly accessible methods/functions go
 	// constructor for this class/object which sets default texture modes
 	TEXTURE_2D_OBJ();
 	// prototype function definition that generates a texture from the image data provided
-	void Create_Texture(unsigned int texture_w, unsigned int texture_h, const char *texture_data);
+	void Create_Texture(unsigned int texture_w, unsigned int texture_h, unsigned char *texture_data);
 	// binds current texture as an active GL_TEXTURE_2D object
 	void Bind_Texture() const; // defined as a const function to deny it permission to change the values of data value member within the texture class
 };

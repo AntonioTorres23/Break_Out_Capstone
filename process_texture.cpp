@@ -10,7 +10,7 @@ TEXTURE_2D_OBJ::TEXTURE_2D_OBJ() : width_of_texture(0), height_of_texture(0), te
 }
 
 // define create_texture member function
-void TEXTURE_2D_OBJ::Create_Texture(unsigned int texture_w, unsigned int texture_h, const char* texture_data)
+void TEXTURE_2D_OBJ::Create_Texture(unsigned int texture_w, unsigned int texture_h, unsigned char* texture_data)
 {
 	// set the related object data method dimensions equal to the values that are in the arguments
 	this->width_of_texture = texture_w; 

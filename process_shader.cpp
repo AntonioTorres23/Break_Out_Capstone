@@ -185,7 +185,7 @@ void	SHADER_OBJ::uniform_matrix_4(const char* uniform_variable_name, const glm::
 	glUniformMatrix4fv(glGetUniformLocation(this->Shader_ID, uniform_variable_name), 1, false, glm::value_ptr(uniform_value));
 }
 
-// define our validate shader errors function
+// define our validate shader errors private function
 void	SHADER_OBJ::Validate_Shader_Errors(unsigned int shader, std::string shader_type)
 {
 	// define a shader_success integer 

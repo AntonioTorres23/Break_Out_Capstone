@@ -18,6 +18,12 @@
     <ClInclude Include="process_texture.h">
       <Filter>source_code</Filter>
     </ClInclude>
+    <ClInclude Include="resource_manager.h">
+      <Filter>source_code</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>supporting_files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -34,6 +40,12 @@
     </ClCompile>
     <ClCompile Include="process_texture.cpp">
       <Filter>source_code</Filter>
+    </ClCompile>
+    <ClCompile Include="resource_manager.cpp">
+      <Filter>source_code</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_image_init.cpp">
+      <Filter>supporting_files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
