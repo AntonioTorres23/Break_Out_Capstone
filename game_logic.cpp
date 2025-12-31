@@ -2,6 +2,11 @@
 
 #include "game_logic.h" // include game_logic header file that contains class template
 
+/*
+NOTICE HOW WE'RE DEFINING THE FUNCTIONS THAT ARE STORED WITHIN THE GAME_OBJ CLASS/OBJECT, SO IN THE C++ FILE HERE WE'RE DEFINING THE ACTUAL SOURCE CODE
+THE FUNCTIONS THAT ARE STORED IN THE HEADER FILE ARE REALLY ONLY PROTOTYPES
+*/
+
 // use the game object contructor that takes as arguments the width and height that the game window should be
 // we also use a contructor member initalizer list with the Game_State ENUM, Key_Pressed_Buffer, and Height and Width of the screen data members. We set the Height and Width of the screen to their respective constructor arguments
 // we use a contstructor member initalizer list because it allows us to set the values of data members prior to the body of the constructor executing
