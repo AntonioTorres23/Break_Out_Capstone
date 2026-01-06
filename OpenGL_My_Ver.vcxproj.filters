@@ -7,6 +7,9 @@
     <Filter Include="supporting_files">
       <UniqueIdentifier>{d4c63fc2-c76f-479e-891d-910b8bf8e555}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source_code\Shaders">
+      <UniqueIdentifier>{2fe8d971-92c3-4a29-b157-5f9250d9f886}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game_logic.h">
@@ -47,5 +50,13 @@
     <ClCompile Include="stb_image_init.cpp">
       <Filter>supporting_files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Shaders\sprite_test.vert">
+      <Filter>source_code\Shaders</Filter>
+    </None>
+    <None Include="Resources\Shaders\sprite_test.frag">
+      <Filter>source_code\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
