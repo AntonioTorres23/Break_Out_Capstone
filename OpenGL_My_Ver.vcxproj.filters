@@ -10,6 +10,9 @@
     <Filter Include="source_code\Shaders">
       <UniqueIdentifier>{2fe8d971-92c3-4a29-b157-5f9250d9f886}</UniqueIdentifier>
     </Filter>
+    <Filter Include="supporting_files\Textures">
+      <UniqueIdentifier>{20d1d0f0-8190-4d56-a7ac-6bf21c5609b8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game_logic.h">
@@ -64,5 +67,10 @@
     <None Include="Resources\Shaders\sprite_test.frag">
       <Filter>source_code\Shaders</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\Textures\dog_smile2.jpg">
+      <Filter>supporting_files\Textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>

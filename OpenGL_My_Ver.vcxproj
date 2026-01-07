@@ -40,6 +40,9 @@
     <None Include="Resources\Shaders\sprite_test.frag" />
     <None Include="Resources\Shaders\sprite_test.vert" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\Textures\dog_smile2.jpg" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

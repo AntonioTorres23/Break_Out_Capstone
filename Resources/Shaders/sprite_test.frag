@@ -22,6 +22,7 @@ void main()
 	// use our output_color variable to output the texture_image with our texture coordinates and our color_of_sprite to change the overall RGB tone through multiplication
 	// also we use a 4-value vector for the color_of_sprite to include an alpha (opacity) value
 	output_color = vec4(color_of_sprite, 1.0) * texture(texture_image, sprite_texture_coordinates);
+	//output_color = vec4(color_of_sprite, 1.0);
 } 
 
 

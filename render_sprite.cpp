@@ -35,7 +35,7 @@ void RENDER_SPRITE_OBJ::Render_and_Draw_Spirte(TEXTURE_2D_OBJ& texture_object_ar
 	sprite_transformation_matrix = glm::translate(sprite_transformation_matrix, glm::vec3(position_of_sprite_argument, 0.0f));
 
 	// then we translate the sprite back to its original position using the same scaling size
-	sprite_transformation_matrix = glm::translate(sprite_transformation_matrix, glm::vec3(0.5f * scale_size_argument.x, 0.5f * scale_size_argument, 0.0f));
+	sprite_transformation_matrix = glm::translate(sprite_transformation_matrix, glm::vec3(0.5f * scale_size_argument.x, 0.5f * scale_size_argument.y, 0.0f));
 	
 	// now rotate the object to the desired position which will then be converted to radians; it will also be rotated along the z axis
 	sprite_transformation_matrix = glm::rotate(sprite_transformation_matrix, glm::radians(rotation_degree_argument), glm::vec3(0.0f, 0.0f, 1.0f));

@@ -121,7 +121,7 @@ SHADER_OBJ RESOURCE_MANAGER::Shader_Load_From_Ext_File(const char *vertexShaderF
 	// now convert the string variables to a c_string style array and store them in new const char pointer variablse
 	const char *vertexShaderCstringSourceCode   = vertexShaderString.c_str();
 	const char *fragmentShaderCstringSourceCode = fragmentShaderString.c_str();
-	const char* geometryShaderCstringSourceCode = geometryShaderString.c_str();
+	const char *geometryShaderCstringSourceCode = geometryShaderString.c_str();
 	// create a shader object with the previous shader source code that we have gathered prior
 	SHADER_OBJ shader_object; 
 	// now use the method function Compile_Shaders within the object to create a shader program
