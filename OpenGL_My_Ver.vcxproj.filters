@@ -27,6 +27,9 @@
     <ClInclude Include="stb_image.h">
       <Filter>supporting_files</Filter>
     </ClInclude>
+    <ClInclude Include="render_sprite.h">
+      <Filter>source_code</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -49,6 +52,9 @@
     </ClCompile>
     <ClCompile Include="stb_image_init.cpp">
       <Filter>supporting_files</Filter>
+    </ClCompile>
+    <ClCompile Include="render_sprite.cpp">
+      <Filter>source_code</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -2,6 +2,11 @@
 
 #include "process_texture.h" // include header file to access class template
 
+/*
+NOTICE HOW WE'RE DEFINING THE FUNCTIONS THAT ARE STORED WITHIN THE TEXTURE_2D_OBJ CLASS/OBJECT, SO IN THE C++ FILE HERE WE'RE DEFINING THE ACTUAL SOURCE CODE
+THE FUNCTIONS THAT ARE STORED IN THE HEADER FILE ARE REALLY ONLY PROTOTYPES
+*/
+
 // define constructor with constructor intalizer list containing relevant values to set data members
 TEXTURE_2D_OBJ::TEXTURE_2D_OBJ() : width_of_texture(0), height_of_texture(0), texture_format_internally(GL_RGB), texture_format_loaded(GL_RGB), texture_wrap_s(GL_REPEAT), texture_wrap_t(GL_REPEAT), texture_min_filter(GL_LINEAR), texture_mag_filter(GL_LINEAR)
 {
