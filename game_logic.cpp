@@ -94,5 +94,5 @@ void GAME_OBJ::Render_Game()
 	*/
 
 	// Draw and Render our sprite on screen via the function Render_and_Draw_Spirte function
-	Sprite_Render->Render_and_Draw_Spirte(texture_object_for_sprite_rendering, glm::vec2(600.0f, 600.0f), glm::vec2(100.0f, 100.0f), 100.0f * static_cast<float>(glfwGetTime()), glm::vec3(0.0f, 1.0f, 1.0f));
+	Sprite_Render->Render_and_Draw_Spirte(texture_object_for_sprite_rendering, glm::vec2(350.0f,500.0f), glm::vec2(100.0f, 100.0f), 0.0f, glm::vec3(1.0f, 1.0f, 1.0f));
 }

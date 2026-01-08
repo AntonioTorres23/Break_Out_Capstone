@@ -38,9 +38,9 @@ void glfw_callback_window_resize(GLFWwindow* glfw_window_argument, int width_res
 void glfw_callback_keyboard_input(GLFWwindow* glfw_window_argument, int input, int input_scan_code, int input_action, int input_mode);
 
 // create a constant global variable that stores the desired width of the screen
-const unsigned int WIDTH_OF_SCREEN = 1200;
+const unsigned int WIDTH_OF_SCREEN = 800;
 // create a constant global variable that stores the desired height of the screen
-const unsigned int HEIGHT_OF_SCREEN = 1200;
+const unsigned int HEIGHT_OF_SCREEN = 1000;
 
 // create a GAME_OBJ object that contains the WIDTH_OF_SCREEN and HEIGHT_OF_SCREEN as its constructor parameters
 GAME_OBJ game_breakout(WIDTH_OF_SCREEN, HEIGHT_OF_SCREEN);

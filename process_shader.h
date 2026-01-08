@@ -4,7 +4,7 @@
 
 #include <string> // include C++ string library
 
-#include <glad/glad.h> //include GLAD; a lib that loads the addresses of OpenGL function pointer
+#include <glad/glad.h> //include GLAD; a lib that loads the addresses of OpenGL function pointers
 #include <glm/glm.hpp> // include glm for uniform vector/matrix sets
 #include <glm/gtc/type_ptr.hpp> // enable type pointers for glm vectors/matrices and such
 

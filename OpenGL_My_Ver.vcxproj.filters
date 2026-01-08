@@ -33,6 +33,12 @@
     <ClInclude Include="render_sprite.h">
       <Filter>source_code</Filter>
     </ClInclude>
+    <ClInclude Include="in_game_obj.h">
+      <Filter>source_code</Filter>
+    </ClInclude>
+    <ClInclude Include="game_level_logic.h">
+      <Filter>source_code</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -57,6 +63,12 @@
       <Filter>supporting_files</Filter>
     </ClCompile>
     <ClCompile Include="render_sprite.cpp">
+      <Filter>source_code</Filter>
+    </ClCompile>
+    <ClCompile Include="in_game_obj.cpp">
+      <Filter>source_code</Filter>
+    </ClCompile>
+    <ClCompile Include="game_level_logic.cpp">
       <Filter>source_code</Filter>
     </ClCompile>
   </ItemGroup>
