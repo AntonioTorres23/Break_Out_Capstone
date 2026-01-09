@@ -38,7 +38,7 @@ public: // all public data/function members
 
 private: // all private data/function members
 
-	// void private member function that will intalize a level from the provided tile data, takes in a 2D vector (think of it like a nested vector) indexed by two locations; i.e. [i][j] where i stores multiple unsigned int values [j]
+	// void private member function that will intalize a level from the provided tile data, takes in a 2D vector (think of it like a nested vector, or rows and columns) indexed by two locations; i.e. [i][j] where i stores multiple unsigned int values [j]
 	// think of it as [i] as a container/box and [j] as the items that are stored inside
 	void initalize_level(std::vector<std::vector<unsigned int>> data_of_tiles, unsigned int width_of_level, unsigned int height_of_level);
 
