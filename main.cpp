@@ -200,12 +200,12 @@ void glfw_callback_keyboard_input(GLFWwindow* glfw_window_argument, int input, i
 	// if our input is greater than or equal to 0 (which I guess means 1 if we are thinking about how arrays work) and less than 1024, process input
 	if (input >= 0 && input < 1024)
 	{
-		// if our input_action detects the key to be pressed, set our Key_Pressed_Buffer boolean array data member within the GAME_OBJ to true
+		// if our input_action detects the key to be pressed, set our Key_Pressed_Buffer boolean array data member within the GAME_OBJ to true; and store the key within the Key_Pressed_Buffer array data member of the GAME_OBJ using input as the index
 		if (input_action == GLFW_PRESS)
 		{
 			game_breakout.Key_Pressed_Buffer[input] = true; 
 		}
-		// else if our input_action detects the key was released, set our Key_Pressed_Buffer boolean array data member within the GAME_OBJ to false
+		// else if our input_action detects the key was released, set our Key_Pressed_Buffer boolean array data member within the GAME_OBJ to false; and store the key within the Key_Pressed_Buffer array data member of the GAME_OBJ using input as the index
 		else if (input_action == GLFW_RELEASE)
 		{
 			game_breakout.Key_Pressed_Buffer[input] = false;

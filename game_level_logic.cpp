@@ -141,3 +141,37 @@ void GAME_LEVEL_OBJ::initalize_level(std::vector<std::vector<unsigned int>> data
 	}
 
 }
+
+// define Level_Render_And_Draw member function
+
+void GAME_LEVEL_OBJ::Level_Render_and_Draw(RENDER_SPRITE_OBJ &render_sprite_argument)
+{
+	// create a for loop that iterates through all provided IN_GAME_OBJ stored in the game_object_bricks standard lib vector within GAME_LEVEL_OBJ
+	// if the state of the IN_GAME_OBJ is not destroyed, then render the IN_GAME_OBJECT witin the game_object_bricks standard lib vector
+	// 
+	// I believe that since we are not using a predefined standerd lib vector and the iterator is using adresses locations, we don't need to use a ; since we are not initalizing anything
+	// but just parsing through something that is already pre-existing
+	for (IN_GAME_OBJ &tiles_in_game_objects_bricks : this->game_object_bricks)
+		if (!tiles_in_game_objects_bricks.game_object_destroyed)
+			// render tile/block/brick with the address of a RENDER_SPRITE_OBJ specified within the parameter/argument 
+			tiles_in_game_objects_bricks.Game_Object_Draw(render_sprite_argument);
+}
+
+// define Level_Complete member functinon
+
+bool GAME_LEVEL_OBJ::Level_Complete()
+{
+	// create a for loop that iterates through all provided IN_GAME_OBJ stored in the game_object_bricks standard lib vector within GAME_LEVEL_OBJ
+	// if the state of the IN_GAME_OBJ is not destroyed, and is not a solid tile/block/brick, then return false. Meaning that the level is not complete yet
+	// else, return true meaning that the level is complete
+	// 
+	// I believe that since we are not using a predefined standerd lib vector and the iterator is using adresses locations, we don't need to use a ; since we are not initalizing anything
+	// but just parsing through something that is already pre-existing
+
+	for (IN_GAME_OBJ& tiles_in_game_objects_bricks : this->game_object_bricks)
+	{
+		if (!tiles_in_game_objects_bricks.game_object_destroyed && !tiles_in_game_objects_bricks.game_object_solid)
+			return false;
+		return true;
+	}
+}
