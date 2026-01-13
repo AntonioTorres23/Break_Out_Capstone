@@ -4,6 +4,7 @@
 #include "resource_manager.h" // include resource_manager header file to access the static functions within the game_logic c++ file
 #include "render_sprite.h" // include render_sprite header file to allow for RENDER_SPRITE_OBJ to be created in the game_logic c++ file
 #include "in_game_obj.h"   // include in_game_obj header file to allow for IN_GAME_OBJ to be created in the game_logic c++ file
+#include "game_ball.h"    // include game_ball header file to allow for GAME_BALL_OBJ to be created in the game_logic c++ file
 
 /*
 NOTICE HOW WE'RE DEFINING THE FUNCTIONS THAT ARE STORED WITHIN THE GAME_OBJ CLASS/OBJECT, SO IN THE C++ FILE HERE WE'RE DEFINING THE ACTUAL SOURCE CODE
@@ -14,6 +15,8 @@ THE FUNCTIONS THAT ARE STORED IN THE HEADER FILE ARE REALLY ONLY PROTOTYPES
 RENDER_SPRITE_OBJ *Sprite_Render; 
 // create a IN_GAME_OBJ non-constructed pointer object that will represent the position of the player/user
 IN_GAME_OBJ *Player_Object; 
+// create a GAME_BALL_OBJ non-contructed pointer object that will represent the breakout ball
+GAME_BALL_OBJ *Game_Ball;
 
 // use the game object contructor that takes as arguments the width and height that the game window should be
 // we also use a contructor member initalizer list with the Game_State ENUM, Key_Pressed_Buffer, and Height and Width of the screen data members. We set the Height and Width of the screen to their respective constructor arguments
@@ -104,12 +107,22 @@ void GAME_OBJ::Initalize_Game()
 	// now with our player_object pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the IN_GAME_OBJ constructor object to the player_object pointer object
 
 	Player_Object = new IN_GAME_OBJ(position_of_player, SCALE_SIZE_OF_PLAYER, RESOURCE_MANAGER::Texture_Get("player_object"));
+
+	// create a 2-value GLM vector that will store the position of the ball object within the screen
+	// this will be calculated by adding the position_of player and a 2-value glm vector with SCALE_SIZE_OF_PLAYER.x / 2.0f - BALL_OBJECT_RADIUS for the x coordinate, and -BALL_OBJECT_RADIUS * 2.0f for the y coordinate
+	// this places the ball with the player to "tie" the two objects together before the player is ready to start the game by launching the ball
+	glm::vec2 position_of_ball = position_of_player + glm::vec2(SCALE_SIZE_OF_PLAYER.x / 2.0f - BALL_OBJECT_RADIUS, -BALL_OBJECT_RADIUS * 2.0f);
+
+
+	// now with our ball_object pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the GAME_BALL_OBJ constructor object to the ball_object pointer object 
+	Game_Ball = new GAME_BALL_OBJ(position_of_ball, BALL_OBJECT_RADIUS, BALL_OBJECT_PHYSICS_VELOCITY, RESOURCE_MANAGER::Texture_Get("game_ball"));
 }
 
 // game update of player movement and ball location function definition
 void GAME_OBJ::Update_Game(float delta_time)
 {
-
+	// call the member function Ball_Movement to update the location of the ball and include the delta_time argument/parameter and the Width_Of_Screen data member stored within the GAME_OBJ
+	Game_Ball->Ball_Movement(delta_time, this->Width_Of_Screen);
 }
 
 // process player input function definition
@@ -128,6 +141,13 @@ void GAME_OBJ::Process_User_Input(float delta_time)
 			// we can go is the value 0.0f (think of the orthographic projection matrix for the shaders we use which defines the dimensions of the screen, we specify with 0.0f as our left most part of the matrix) 
 			if (Player_Object->game_object_position.x >= 0.0f)
 				Player_Object->game_object_position.x -= player_object_velocity;
+			
+			// if the GAME_BALL_OBJ's data member ball_stuck is true, do the same subtraction compound matrix to the ball position's x coordinate using the player_object_velocity value, moving the ball along with the player to the left
+			if (Game_Ball->ball_stuck)
+			{
+				Game_Ball->game_object_position.x -= player_object_velocity;
+			}
+
 		}
 		// if the KEY_PRESSED_BUFFER data member array within GAME_OBJ contains GLFW_KEY_D (if this statment is true)
 		if (this->Key_Pressed_Buffer[GLFW_KEY_D])
@@ -138,6 +158,18 @@ void GAME_OBJ::Process_User_Input(float delta_time)
 			// if it is less than this value, then use an addition compound assignment operator to move Player_Object.game_object_position's x value to the right by the value of player_object_velocity
 			if (Player_Object->game_object_position.x <= this->Width_Of_Screen - Player_Object->game_object_scale_size.x)
 				Player_Object->game_object_position.x += player_object_velocity;
+
+			// if the GAME_BALL_OBJ's data member ball_stuck is true, do the same add compound matrix to the ball position's x coordinate using the player_object_velocity value, moving the ball along with the player to the right
+			if (Game_Ball->ball_stuck)
+			{
+				Game_Ball->game_object_position.x += player_object_velocity;
+			}
+		}
+		// if the KEY_PRESSED_BUFFER data member array within GAME_OBJ contains GLFW_KEY_SPACE (if this statment is true)
+		if (this->Key_Pressed_Buffer[GLFW_KEY_SPACE])
+		{
+			// set the ball_stuck data member within GAME_BALL_OBJ to false which essentially launches the ball and starts the game
+			Game_Ball->ball_stuck = false; 
 		}
 
 	}
@@ -176,6 +208,10 @@ void GAME_OBJ::Render_Game()
 			this->Game_Levels[this->Game_Level].Level_Render_and_Draw(*Sprite_Render);
 
 			Player_Object->Game_Object_Draw(*Sprite_Render);
+
+			// NOW DRAW AND RENDER THE BALL
+			
+			Game_Ball->Game_Object_Draw(*Sprite_Render);
 	}
 
 

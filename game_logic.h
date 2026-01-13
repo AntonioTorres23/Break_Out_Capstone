@@ -21,6 +21,13 @@ const glm::vec2 SCALE_SIZE_OF_PLAYER(100.0f, 20.0f);
 
 const float PLAYER_PHYSICS_VELOCITY(500.0f);
 
+// Constant 2-value glm vector variable that stores the BALL_OBJECT_PHYSICS_VELOCITY to be the initial velocity value upon creating a GAME_BALL_OBJ
+const glm::vec2 BALL_OBJECT_PHYSICS_VELOCITY(100.0f, -350.0f);
+
+// Constant float variable that stores the BALL_OBJECT_RADIUS to be the inital radius value upon create a GAME_BALL_OBJ
+const float BALL_OBJECT_RADIUS = 12.5f;
+
+
 // Game class that stores all game related states/functionality
 class GAME_OBJ
 {

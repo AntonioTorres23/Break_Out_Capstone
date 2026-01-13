@@ -39,6 +39,9 @@
     <ClInclude Include="game_level_logic.h">
       <Filter>source_code</Filter>
     </ClInclude>
+    <ClInclude Include="game_ball.h">
+      <Filter>source_code</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -69,6 +72,9 @@
       <Filter>source_code</Filter>
     </ClCompile>
     <ClCompile Include="game_level_logic.cpp">
+      <Filter>source_code</Filter>
+    </ClCompile>
+    <ClCompile Include="game_ball.cpp">
       <Filter>source_code</Filter>
     </ClCompile>
   </ItemGroup>
