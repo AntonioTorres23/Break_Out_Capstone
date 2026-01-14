@@ -15,7 +15,8 @@ class RENDER_SPRITE_OBJ
 {
 public: // all of our public data/function members
 	// constructor for RENDER_SPRITE_OBJ which requires an address of a shader object as its parameter 
-	RENDER_SPRITE_OBJ(SHADER_OBJ &shader_object_argument);
+	// CHANGE ON 1/14/2026 @ 2:45 PM, CHANGED CONSTRUCTOR PARAMTER/ARGUMENT OF RENDER_SPRITE_OBJ FROM A SHADER_OBJ &SHADER_OBJECT_ARGUMENT TO A CONST SHADER_OBJ &SHADER_OBJECT_ARGUMENT 
+	RENDER_SPRITE_OBJ(const SHADER_OBJ &shader_object_argument);
 
 	// deconstructor for RENDER_SPRITE_OBJ
 	~RENDER_SPRITE_OBJ();

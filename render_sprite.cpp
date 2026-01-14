@@ -6,7 +6,8 @@ THE FUNCTIONS THAT ARE STORED IN THE HEADER FILE ARE REALLY ONLY PROTOTYPES
 */
 
 // define contructor for RENDER_SPRITE_OBJ
-RENDER_SPRITE_OBJ::RENDER_SPRITE_OBJ(SHADER_OBJ& shader_object_argument)
+// CHANGE ON 1/14/2026 @ 2:45 PM, CHANGED CONSTRUCTOR PARAMTER/ARGUMENT OF RENDER_SPRITE_OBJ FROM A SHADER_OBJ &SHADER_OBJECT_ARGUMENT TO A CONST SHADER_OBJ &SHADER_OBJECT_ARGUMENT 
+RENDER_SPRITE_OBJ::RENDER_SPRITE_OBJ(const SHADER_OBJ& shader_object_argument)
 {
 	// set the private sprite_shader_object data member equal to the shader_object_argument (exact address location) object provided in the constructor
 	this->sprite_shader_object = shader_object_argument;
