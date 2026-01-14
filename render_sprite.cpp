@@ -43,7 +43,7 @@ void RENDER_SPRITE_OBJ::Render_and_Draw_Spirte(TEXTURE_2D_OBJ& texture_object_ar
 	// this translation is to ensure that the roatation is at the origin (0,0), so we translate the sprite by half its scaling size first and then rotate the sprite
 	sprite_transformation_matrix = glm::translate(sprite_transformation_matrix, glm::vec3(-0.5f * scale_size_argument.x, -0.5f * scale_size_argument.y, 0.0f));
 
-	// uniform scale the sprite by the specified dimensions
+	// scale the sprite by the specified dimensions
 	sprite_transformation_matrix = glm::scale(sprite_transformation_matrix, glm::vec3(scale_size_argument, 1.0f));
 
 	// within our private sprite_shader_object data member, set the coorelating uniforms within the vertex shader

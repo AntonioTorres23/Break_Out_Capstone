@@ -53,7 +53,7 @@ public: // all public members/functions
 
 	void Render_Game();                 // renders the game on the players screen
 
-
+	void Axis_Aligned_Bounding_Box_Collisions(); // function that processes game behavior if a collision occurs with two objects 
 
 };
 

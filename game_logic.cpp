@@ -18,6 +18,8 @@ IN_GAME_OBJ *Player_Object;
 // create a GAME_BALL_OBJ non-contructed pointer object that will represent the breakout ball
 GAME_BALL_OBJ *Game_Ball;
 
+
+
 // use the game object contructor that takes as arguments the width and height that the game window should be
 // we also use a contructor member initalizer list with the Game_State ENUM, Key_Pressed_Buffer, and Height and Width of the screen data members. We set the Height and Width of the screen to their respective constructor arguments
 // we use a contstructor member initalizer list because it allows us to set the values of data members prior to the body of the constructor executing
@@ -123,6 +125,9 @@ void GAME_OBJ::Update_Game(float delta_time)
 {
 	// call the member function Ball_Movement to update the location of the ball and include the delta_time argument/parameter and the Width_Of_Screen data member stored within the GAME_OBJ
 	Game_Ball->Ball_Movement(delta_time, this->Width_Of_Screen);
+
+	// call the member function Axis_Aligned_Bounding_Box_Collisions to update collisions with the ball and tiles/blocks/bricks in the game; if a collision happens and the block is destroyable, destroy the block
+	this->Axis_Aligned_Bounding_Box_Collisions();
 }
 
 // process player input function definition
@@ -214,5 +219,75 @@ void GAME_OBJ::Render_Game()
 			Game_Ball->Game_Object_Draw(*Sprite_Render);
 	}
 
+
+}
+
+// PROTOTYPE FUNCTION DECLARATIONS for Axis_Aligned_Bounding_Box_Collision_Check function only relevant to this C++ file
+
+bool Axis_Aligned_Bounding_Box_Collision_Check(IN_GAME_OBJ& first_in_game_obj_argument, IN_GAME_OBJ& second_in_game_obj_argument);
+
+// axis aligned bounding box collisions function definition 
+void GAME_OBJ::Axis_Aligned_Bounding_Box_Collisions()
+{
+	// create a for loop that iterates through all provided IN_GAME_OBJ "bricks" stored in Game_Level 1 (0 when specified within the index specifier Game_Level data member) of the GAME_LEVEL_OBJ standard lib vector within GAME_OBJ
+	// if the state of the IN_GAME_OBJ is not destroyed, then check if there is a collision between an individual tile/block/brick and the ball object
+	//  
+	// I believe that since we are not using a predefined standerd lib vector and the iterator is using adresses locations, we don't need to use a ; since we are not initalizing anything
+	// but just parsing through something that is already pre-existing
+	for (IN_GAME_OBJ &brick_game_object_within_game_level_iterator : this->Game_Levels[this->Game_Level].game_object_bricks)
+	{
+		if (!brick_game_object_within_game_level_iterator.game_object_destroyed)
+		{
+			// if there is a collision detected between the Game_Ball and brick iterator's AABBs, remember to make the game ball have a value pointer to get the actual Ball_Object and not just the address
+			if (Axis_Aligned_Bounding_Box_Collision_Check(*Game_Ball, brick_game_object_within_game_level_iterator));
+			{
+				// the collision has occured between the ball and brick iterator's AABBs, and the brick iterator is not a solid tile/block/brick within the game_object_solid data member, then change the game_object_destroyed data member member to true
+				if (!brick_game_object_within_game_level_iterator.game_object_solid)
+				{
+					brick_game_object_within_game_level_iterator.game_object_destroyed = true; 
+				}
+
+			}
+
+		}
+	}
+
+}
+
+
+// define a boolean function that is only relevant to this C++ file that checks for axis-aligned bounding box (AABB) collisions
+// think of this like a hit box for the objects, if the two boxes (objects) overrlap on both axes, we have a collision
+// we do this instead of using the actual vertex data of an IN_GAME_OBJ because it simplifies collision detection and improves preformance because some objects can contain many vertices
+
+bool Axis_Aligned_Bounding_Box_Collision_Check(IN_GAME_OBJ &first_in_game_obj_argument, IN_GAME_OBJ &second_in_game_obj_argument)
+{
+	 
+		
+	// check if a collision has occured on the x axis of the two provided IN_GAME_OBJs, store this in a boolean variable
+	
+	/*
+		there are 2 things we need to create a bounding box a top-left position and a bottom-right position
+
+		we already have a top-left position within our IN_GAME_OBJ which is game_object_position (I believe this is the case becuase this is simply the location where the object resides)
+		additionally, we can retrieve this bottom-right position by taking the sum of prior game_object_position and game_object_scale_size 
+		
+		I think of the scale size as like the furthest we want the IN_GAME_OBJ to jut out which is always scaled positively within the transformation matrix 
+		
+		all of this is in "world space" so we translate the vertices into the transformation matrix with scaling being applied first and lastly translations (see render_sprite.cpp for the actual source code)
+	
+		within this boolean variable, we check using boolean operators to see if the two IN_GAME_OBJ parameters/arguments's AABBs collide with each other
+	*/
+
+	// x axis of both IN_GAME_OBJs are greater than or equal to each other, we have an x axis collision
+
+	bool axis_aligned_bounding_box_x_axis_collision = first_in_game_obj_argument.game_object_position.x + first_in_game_obj_argument.game_object_scale_size.x >= second_in_game_obj_argument.game_object_position.x && second_in_game_obj_argument.game_object_position.x + second_in_game_obj_argument.game_object_scale_size.x >= first_in_game_obj_argument.game_object_position.x;
+
+	// same concept applies for the y axis but now we use y coordiantes
+
+	bool axis_aligned_bounding_box_y_axis_collision = first_in_game_obj_argument.game_object_position.y + first_in_game_obj_argument.game_object_scale_size.y >= second_in_game_obj_argument.game_object_position.y && second_in_game_obj_argument.game_object_position.y + second_in_game_obj_argument.game_object_scale_size.y >= first_in_game_obj_argument.game_object_position.y;
+	
+	// return both axes collisions only if both variables are true (a collision has occured on both axes)
+	
+	return axis_aligned_bounding_box_x_axis_collision && axis_aligned_bounding_box_y_axis_collision;
 
 }

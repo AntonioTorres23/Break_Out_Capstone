@@ -107,10 +107,10 @@ void GAME_LEVEL_OBJ::initalize_level(std::vector<std::vector<unsigned int>> data
 			}
 
 			// else if statement if the value within data_of_tiles 2D vector is greater than 1, remember anything greater than one is a destroyable tile/block/brick with each value coorelating to a color
-			if (data_of_tiles[y_coordinate][x_coordinate] > 1)
+			else if (data_of_tiles[y_coordinate][x_coordinate] > 1)
 			{
 				// if value within data_of_tiles 2D vector is equal to 1, make the destroyable tile/block/brick white using a 3-value GLM vector
-				glm::vec3 color_of_tile = glm::vec3(0.0f);
+				glm::vec3 color_of_tile = glm::vec3(1.0f);
 
 				// if value within data_of_tiles 2D vector is equal to 2, make the color_of_tile a purple-ish color
 				if (data_of_tiles[y_coordinate][x_coordinate] == 2)
@@ -124,6 +124,8 @@ void GAME_LEVEL_OBJ::initalize_level(std::vector<std::vector<unsigned int>> data
 				// if value within data_of_tiles 2D vector is equal to 5, make the color_of_tile a red-ish color
 				else if (data_of_tiles[y_coordinate][x_coordinate] == 5)
 					color_of_tile = glm::vec3(1.0f, 0.5f, 0.0f);
+
+				
 
 				// now similar to the solid tile/block/brick, multiply the x_coordinate and y_coordinate by thier respective width_of_individual_tile and height_of_individual_tile within a 2-value GLM vector that will be our position_of_tile variable
 				glm::vec2 position_of_tile(width_of_individual_tile * x_coordinate, height_of_individual_tile * y_coordinate);
