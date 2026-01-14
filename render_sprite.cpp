@@ -24,8 +24,8 @@ RENDER_SPRITE_OBJ::~RENDER_SPRITE_OBJ()
 
 
 // define the void member public function Render_and_Draw_Spirte
-
-void RENDER_SPRITE_OBJ::Render_and_Draw_Spirte(TEXTURE_2D_OBJ& texture_object_argument, glm::vec2 position_of_sprite_argument, glm::vec2 scale_size_argument, float rotation_degree_argument, glm::vec3 sprite_color_argument)
+// CHANGE ON 1/14/2026 @ 4:30 PM, CHANGED PARAMTER/ARGUMENT OF RENDER_AND_DRAW_SPRITE METHOD FUNCTION FROM A TEXTURE_2D_OBJ &TEXTURE_2D_OBJECT_ARGUMENT TO A CONST TEXTURE_2D_OBJ &TEXTURE_2D_OBJECT_ARGGUMENT 
+void RENDER_SPRITE_OBJ::Render_and_Draw_Spirte(const TEXTURE_2D_OBJ& texture_object_argument, glm::vec2 position_of_sprite_argument, glm::vec2 scale_size_argument, float rotation_degree_argument, glm::vec3 sprite_color_argument)
 {
 	// activate the related shader object for our sprite that is stored in the private data member
 	this->sprite_shader_object.Activate();
