@@ -125,8 +125,6 @@ void GAME_LEVEL_OBJ::initalize_level(std::vector<std::vector<unsigned int>> data
 				else if (data_of_tiles[y_coordinate][x_coordinate] == 5)
 					color_of_tile = glm::vec3(1.0f, 0.5f, 0.0f);
 
-				
-
 				// now similar to the solid tile/block/brick, multiply the x_coordinate and y_coordinate by thier respective width_of_individual_tile and height_of_individual_tile within a 2-value GLM vector that will be our position_of_tile variable
 				glm::vec2 position_of_tile(width_of_individual_tile * x_coordinate, height_of_individual_tile * y_coordinate);
 

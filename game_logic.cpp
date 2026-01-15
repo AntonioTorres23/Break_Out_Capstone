@@ -6,6 +6,10 @@
 #include "in_game_obj.h"   // include in_game_obj header file to allow for IN_GAME_OBJ to be created in the game_logic c++ file
 #include "game_ball.h"    // include game_ball header file to allow for GAME_BALL_OBJ to be created in the game_logic c++ file
 
+
+#include <iostream>
+
+
 /*
 NOTICE HOW WE'RE DEFINING THE FUNCTIONS THAT ARE STORED WITHIN THE GAME_OBJ CLASS/OBJECT, SO IN THE C++ FILE HERE WE'RE DEFINING THE ACTUAL SOURCE CODE
 THE FUNCTIONS THAT ARE STORED IN THE HEADER FILE ARE REALLY ONLY PROTOTYPES
@@ -18,6 +22,12 @@ IN_GAME_OBJ *Player_Object;
 // create a GAME_BALL_OBJ non-contructed pointer object that will represent the breakout ball
 GAME_BALL_OBJ *Game_Ball;
 
+
+// PROTOTYPE FUNCTION DECLARATIONS for Axis_Aligned_Bounding_Box_Collision_Check function only relevant to this C++ file
+bool Axis_Aligned_Bounding_Box_Collision_Check(IN_GAME_OBJ &first_in_game_obj_argument, IN_GAME_OBJ &second_in_game_obj_argument);
+
+// PROTOTYPE FUNCTION DECLARATIONS for Axis_Aligned_Bounding_Box_Collision_Check (OVERLOADED GAME_BALL_OBJ VERSION OF THIS FUNCTION FOR AABB - CIRCLE COLLISION CHECK) function only relevant to this C++ file
+bool Axis_Aligned_Bounding_Box_Collision_Check(GAME_BALL_OBJ &game_ball_obj_argument, IN_GAME_OBJ &second_in_game_obj_argument);
 
 
 // use the game object contructor that takes as arguments the width and height that the game window should be
@@ -36,6 +46,7 @@ GAME_OBJ::~GAME_OBJ()
 	// the delete keyword is used to destroy pointer objects that are dynamically created via the new keyword; therefore this deallocates memory from the heap that these dynamically allocated objects use
 	delete Sprite_Render;
 	delete Player_Object;
+	delete Game_Ball;
 }
 
 // game initazlier function definition
@@ -222,10 +233,6 @@ void GAME_OBJ::Render_Game()
 
 }
 
-// PROTOTYPE FUNCTION DECLARATIONS for Axis_Aligned_Bounding_Box_Collision_Check function only relevant to this C++ file
-
-bool Axis_Aligned_Bounding_Box_Collision_Check(IN_GAME_OBJ& first_in_game_obj_argument, IN_GAME_OBJ& second_in_game_obj_argument);
-
 // axis aligned bounding box collisions function definition 
 void GAME_OBJ::Axis_Aligned_Bounding_Box_Collisions()
 {
@@ -239,13 +246,12 @@ void GAME_OBJ::Axis_Aligned_Bounding_Box_Collisions()
 		if (!brick_game_object_within_game_level_iterator.game_object_destroyed)
 		{
 			// if there is a collision detected between the Game_Ball and brick iterator's AABBs, remember to make the game ball have a value pointer to get the actual Ball_Object and not just the address
-			if (Axis_Aligned_Bounding_Box_Collision_Check(*Game_Ball, brick_game_object_within_game_level_iterator));
+			if (Axis_Aligned_Bounding_Box_Collision_Check(*Game_Ball, brick_game_object_within_game_level_iterator))
 			{
 				// the collision has occured between the ball and brick iterator's AABBs, and the brick iterator is not a solid tile/block/brick within the game_object_solid data member, then change the game_object_destroyed data member member to true
 				if (!brick_game_object_within_game_level_iterator.game_object_solid)
-				{
+					
 					brick_game_object_within_game_level_iterator.game_object_destroyed = true; 
-				}
 
 			}
 
@@ -279,15 +285,54 @@ bool Axis_Aligned_Bounding_Box_Collision_Check(IN_GAME_OBJ &first_in_game_obj_ar
 	*/
 
 	// x axis of both IN_GAME_OBJs are greater than or equal to each other, we have an x axis collision
-
+	
 	bool axis_aligned_bounding_box_x_axis_collision = first_in_game_obj_argument.game_object_position.x + first_in_game_obj_argument.game_object_scale_size.x >= second_in_game_obj_argument.game_object_position.x && second_in_game_obj_argument.game_object_position.x + second_in_game_obj_argument.game_object_scale_size.x >= first_in_game_obj_argument.game_object_position.x;
 
 	// same concept applies for the y axis but now we use y coordiantes
 
 	bool axis_aligned_bounding_box_y_axis_collision = first_in_game_obj_argument.game_object_position.y + first_in_game_obj_argument.game_object_scale_size.y >= second_in_game_obj_argument.game_object_position.y && second_in_game_obj_argument.game_object_position.y + second_in_game_obj_argument.game_object_scale_size.y >= first_in_game_obj_argument.game_object_position.y;
-	
+
 	// return both axes collisions only if both variables are true (a collision has occured on both axes)
 	
 	return axis_aligned_bounding_box_x_axis_collision && axis_aligned_bounding_box_y_axis_collision;
+
+}
+
+// OVERLOADED VERSION OF THE PRIOR FUNCTION THAT CHECKS FOR CIRCLE AABB COLLISION DETECTION
+// we use a GAME_BALL_OBJ for our our first argument/parameter instead of a IN_GAME_OBJ
+bool Axis_Aligned_Bounding_Box_Collision_Check(GAME_BALL_OBJ &game_ball_obj_argument, IN_GAME_OBJ &second_in_game_obj_argument)
+{
+	// some prior knowledge, 
+	// Radius: the distance from the center of a circle to any point on its circumference (the outer parrt of a circle), we defined this earlier within the GAME_BALL_OBJ data member ball_radius 
+	// Center: a point exactly in the center of a circle where all radii (plural of radius) meet
+	// glm::clamp: glm::clamp will clamp a value (or values for GLM vectors) within a provided given range (i.e. int x = glm::clamp(2, -10, 10) = 2 (the value 2 is in range of -10-10), int y = glm::clamp(20, -10, 10) = 10 (the value 20 is not in range of -10-10 so it gets "clamped" down to that range which would be 10))
+	// 
+	// get the center point of the GAME_BALL_OBJ by taking the sum of the GAME_BALL_OBJ's position 2-value GLM vector data member and the GAME_BALL_OBJ's float value radius data member; store this result in a 2-value GLM vector
+	// both the x and y value of GAME_BALL_OBJ's game_object_position data member are added by the GAME_BALL_OBJ's ball_radius data member value (i.e. (x + ball_radius, y + ball_radius) = ball_center_point glm 2-value vector)
+	glm::vec2 ball_center_point(game_ball_obj_argument.game_object_position + game_ball_obj_argument.ball_radius);
+	
+	// calculate the half-extents of the IN_GAME_OBJ's AABB; this are the distances between the AABB's center as well as its edges
+	// to get these results we divide each of the IN_GAME_OBJs game_object_scale_size data member's x and y values by 2
+	glm::vec2 axis_aligned_bounding_box_half_extents(second_in_game_obj_argument.game_object_scale_size.x / 2.0, second_in_game_obj_argument.game_object_scale_size.y / 2.0);
+
+	// calculate the IN_GAME_OBJ's AABB's center point (same idea as the GAME_BALL_OBJ's center point) in which we add the relative IN_GAME_OBJ's positional coordinate value with the relative axis_aligned_bounding_box_half_extents's coordinate value
+	glm::vec2 axis_aligned_bounding_box_center_point(second_in_game_obj_argument.game_object_position.x + axis_aligned_bounding_box_half_extents.x, second_in_game_obj_argument.game_object_position.y + axis_aligned_bounding_box_half_extents.y);
+
+	// get the difference (result of a subtraction equation) between the ball_center_point and the axis_aligned_bounding_box_center_point
+	glm::vec2 difference_between_ball_center_point_and_aabb_center_point = ball_center_point - axis_aligned_bounding_box_center_point;
+
+	// now we clamp that difference variable between the negative axis_aligned_bounding_box_center_point values and axis_aligned_bounding_box_center_point values
+	glm::vec2 clamp_difference_between_ball_center_point_and_aabb_center_point_to_half_extents = glm::clamp(difference_between_ball_center_point_and_aabb_center_point, -axis_aligned_bounding_box_half_extents, axis_aligned_bounding_box_half_extents);
+
+	// add this to the axis_aligned_bounding_box_center_point to get the closest point from the AABB and the ball
+	glm::vec2 closest_point_between_aabb_and_ball = axis_aligned_bounding_box_center_point + clamp_difference_between_ball_center_point_and_aabb_center_point_to_half_extents;
+
+	// now get the difference between closest_point_between_aabb_and_ball and the ball_center_point to determine if the length of this 2-value GLM vector is less then the GAME_BALL_OBJ's radius (thus a collision happens)
+	glm::vec2 difference_between_closest_point_between_aabb_and_ball_and_ball_center_point = closest_point_between_aabb_and_ball - ball_center_point;
+
+	// use glm::length (which measures the length/magnitude of a glm vector) to see if this value is less than the GAME_BALL_OBJ's radius this will return a boolan value that if true a collision has occurred, if not, a collision has not occured
+	return glm::length(difference_between_closest_point_between_aabb_and_ball_and_ball_center_point) < game_ball_obj_argument.ball_radius;
+
+
 
 }
