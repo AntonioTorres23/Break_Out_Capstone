@@ -6,7 +6,8 @@ THE FUNCTIONS THAT ARE STORED IN THE HEADER FILE ARE REALLY ONLY PROTOTYPES
 */
 
 // define contructor for RENDER_SPRITE_OBJ
-RENDER_SPRITE_OBJ::RENDER_SPRITE_OBJ(SHADER_OBJ& shader_object_argument)
+// CHANGE ON 1/14/2026 @ 2:45 PM, CHANGED CONSTRUCTOR PARAMTER/ARGUMENT OF RENDER_SPRITE_OBJ FROM A SHADER_OBJ &SHADER_OBJECT_ARGUMENT TO A CONST SHADER_OBJ &SHADER_OBJECT_ARGUMENT 
+RENDER_SPRITE_OBJ::RENDER_SPRITE_OBJ(const SHADER_OBJ& shader_object_argument)
 {
 	// set the private sprite_shader_object data member equal to the shader_object_argument (exact address location) object provided in the constructor
 	this->sprite_shader_object = shader_object_argument;
@@ -23,8 +24,8 @@ RENDER_SPRITE_OBJ::~RENDER_SPRITE_OBJ()
 
 
 // define the void member public function Render_and_Draw_Spirte
-
-void RENDER_SPRITE_OBJ::Render_and_Draw_Spirte(TEXTURE_2D_OBJ& texture_object_argument, glm::vec2 position_of_sprite_argument, glm::vec2 scale_size_argument, float rotation_degree_argument, glm::vec3 sprite_color_argument)
+// CHANGE ON 1/14/2026 @ 4:30 PM, CHANGED PARAMTER/ARGUMENT OF RENDER_AND_DRAW_SPRITE METHOD FUNCTION FROM A TEXTURE_2D_OBJ &TEXTURE_2D_OBJECT_ARGUMENT TO A CONST TEXTURE_2D_OBJ &TEXTURE_2D_OBJECT_ARGGUMENT 
+void RENDER_SPRITE_OBJ::Render_and_Draw_Spirte(const TEXTURE_2D_OBJ& texture_object_argument, glm::vec2 position_of_sprite_argument, glm::vec2 scale_size_argument, float rotation_degree_argument, glm::vec3 sprite_color_argument)
 {
 	// activate the related shader object for our sprite that is stored in the private data member
 	this->sprite_shader_object.Activate();

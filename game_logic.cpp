@@ -62,10 +62,12 @@ void GAME_OBJ::Initalize_Game()
 	RESOURCE_MANAGER::Shader_Get("sprite_test").uniform_matrix_4("sprite_orthographic_projection_matrix", sprite_orthographic_projection_matrix);
 	
 	// create a temporary shader object that stores the same sprite test shader but within an l-value object
-	SHADER_OBJ dynamic_memory_sprite_test_shader_object;
+	
+	//SHADER_OBJ dynamic_memory_sprite_test_shader_object;
 
 	// now get that same shader program via the static function Shader_Get and store it in the shader object we just created  
-	dynamic_memory_sprite_test_shader_object = RESOURCE_MANAGER::Shader_Get("sprite_test");
+	
+	//dynamic_memory_sprite_test_shader_object = RESOURCE_MANAGER::Shader_Get("sprite_test");
 
 	// now with our sprite_render pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the rendered sprite constructor object to the sprite_render pointer object
 	// within the constructor we specify our sprite_test shader program created earlier with the dynamic_memory_sprite_test_shader_object
@@ -76,7 +78,27 @@ void GAME_OBJ::Initalize_Game()
 	  via returning the mapped string associated with the shader object, which is a temporary object (aka an r value) that only builds the shader object then destroys it which does not let us keep a reference to it. Which is why
 	  we need to create another l-value object that is stores the shader program in memory and so the contructor can grab the address. 
 	*/ 
-	Sprite_Render = new RENDER_SPRITE_OBJ(dynamic_memory_sprite_test_shader_object);
+
+	// fixed the issue that required the dynamic_memory_sprite_test_shader_object, can't really put it in any better way than the original user that found the solution on LearnOpenGL.com so here is thier statement below this line
+
+	/*
+		From User Tuke on the "https://learnopengl.com/In-Practice/2D-Game/Rendering-Sprites" comments:
+
+		#4 is a C++ thing. The SpriteRenderer constructor as it's written takes in a non-const reference to a shader. 
+		The ResourceManager::GetShader returns a Shader by value, which is a temporary object, (an rvalue is the term to look up). 
+		That returned Shader is built and then destroyed immediately, so the compiler doesn't let you keep a reference to it.
+		
+		If you make myShader, that becomes an lvalue object allocated on the stack, so you can take a reference to it, which works in Akami's comment. 	
+		Imreness's comment works because it changes what's returned from the ResourceManager from a temporary object, to a reference to the RM's Shader, which is also an lvalue.
+		
+		Another solution is to change the parameter in the SpriteRenderer constructor from a non-const reference to a const ref, i.e. const Shader& Shader. 
+		I think the compiler's logic here is this: it knows that the reference passed in is read only, so it will happily just read the data it needs and throw the argument object away when it's done. 
+		Passing a non-const ref is used if you want to mutate an object, so the compiler yells at you if it think you're mutating an object that it will just throw away when the constructor is over.
+		
+		Hopefully that makes sense
+	*/
+
+	Sprite_Render = new RENDER_SPRITE_OBJ(RESOURCE_MANAGER::Shader_Get("sprite_test"));
 
 	// load texture(s) which will represent our sprite(s) with the resource manager static function Texture_Load
 	RESOURCE_MANAGER::Texture_Load("Resources/Textures/background.jpg", false, "game_background");
@@ -196,10 +218,12 @@ void GAME_OBJ::Render_Game()
 {
 
 	// create a temporary texture object that stores the same texture but within an l-value object
-	TEXTURE_2D_OBJ texture_object_for_sprite_rendering;
+	
+	//TEXTURE_2D_OBJ texture_object_for_sprite_rendering;
 
 	// now get that same texture object via the static function Texture_Get and store it in the texture object we just created  
-	texture_object_for_sprite_rendering = RESOURCE_MANAGER::Texture_Get("game_background");
+	
+	//texture_object_for_sprite_rendering = RESOURCE_MANAGER::Texture_Get("game_background");
 
 	// within the Render_and_Draw_Sprite method function, we specify our texture image created earlier with the texture_object_for_sprite_rendering
 
@@ -210,6 +234,24 @@ void GAME_OBJ::Render_Game()
 	  we need to create another l-value object that is stores the shader program in memory and so the contructor can grab the address.
 	*/
 
+	// fixed the issue that required the texture_object_for_sprite_rendering, can't really put it in any better way than the original user that found the solution on LearnOpenGL.com so here is thier statement below this line
+
+	/*
+		From User Tuke on the "https://learnopengl.com/In-Practice/2D-Game/Rendering-Sprites" comments:
+
+		#4 is a C++ thing. The SpriteRenderer constructor as it's written takes in a non-const reference to a shader. 
+		The ResourceManager::GetShader returns a Shader by value, which is a temporary object, (an rvalue is the term to look up). 
+		That returned Shader is built and then destroyed immediately, so the compiler doesn't let you keep a reference to it.
+		
+		If you make myShader, that becomes an lvalue object allocated on the stack, so you can take a reference to it, which works in Akami's comment. 	
+		Imreness's comment works because it changes what's returned from the ResourceManager from a temporary object, to a reference to the RM's Shader, which is also an lvalue.
+		
+		Another solution is to change the parameter in the SpriteRenderer constructor from a non-const reference to a const ref, i.e. const Shader& Shader. 
+		I think the compiler's logic here is this: it knows that the reference passed in is read only, so it will happily just read the data it needs and throw the argument object away when it's done. 
+		Passing a non-const ref is used if you want to mutate an object, so the compiler yells at you if it think you're mutating an object that it will just throw away when the constructor is over.
+		
+		Hopefully that makes sense
+	*/
 
 	// if the state of the game enumeration is considered active, render the level
 
@@ -217,7 +259,7 @@ void GAME_OBJ::Render_Game()
 	{
 			// DRAW AND RENDER THE BACKGROUND FIRST
 			// Draw and Render our sprite on screen via the function Render_and_Draw_Spirte function
-			Sprite_Render->Render_and_Draw_Spirte(texture_object_for_sprite_rendering, glm::vec2(0.0f, 0.0f), glm::vec2(this->Width_Of_Screen, this->Height_Of_Screen), 0.0f);
+			Sprite_Render->Render_and_Draw_Spirte(RESOURCE_MANAGER::Texture_Get("game_background"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width_Of_Screen, this->Height_Of_Screen), 0.0f);
 
 			// NOW DRAW AND RENDER THE TILES/BLOCKS/BRICKS IN THE GAME_LEVELS member standard lib vector
 			// the Game_Level member is like an index and stores what level we want to load so in this case index 0 stores level one so we will draw and render level one

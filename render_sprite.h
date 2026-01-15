@@ -15,7 +15,8 @@ class RENDER_SPRITE_OBJ
 {
 public: // all of our public data/function members
 	// constructor for RENDER_SPRITE_OBJ which requires an address of a shader object as its parameter 
-	RENDER_SPRITE_OBJ(SHADER_OBJ &shader_object_argument);
+	// CHANGE ON 1/14/2026 @ 2:45 PM, CHANGED CONSTRUCTOR PARAMTER/ARGUMENT OF RENDER_SPRITE_OBJ FROM A SHADER_OBJ &SHADER_OBJECT_ARGUMENT TO A CONST SHADER_OBJ &SHADER_OBJECT_ARGUMENT 
+	RENDER_SPRITE_OBJ(const SHADER_OBJ &shader_object_argument);
 
 	// deconstructor for RENDER_SPRITE_OBJ
 	~RENDER_SPRITE_OBJ();
@@ -25,7 +26,9 @@ public: // all of our public data/function members
 	a scale size 2-value vector which by default is set to 10.0 on both x and y, a float value that represents the amount of rotation of the sprite in degrees which
 	by default is set to 0.0, and a 3-value vector that represents a color to set the sprite as which by default is 1.0 on r, g, and b (white)
 	*/
-	void Render_and_Draw_Spirte(TEXTURE_2D_OBJ& texture_object_argument, glm::vec2 position_of_sprite_argument, glm::vec2 scale_size_argument = glm::vec2(10.0f, 10.0f), float rotation_degree_argument = 0.0f, glm::vec3 sprite_color_argument = glm::vec3(1.0));
+
+	// CHANGE ON 1/14/2026 @ 4:30 PM, CHANGED PARAMTER/ARGUMENT OF RENDER_AND_DRAW_SPRITE METHOD FUNCTION FROM A TEXTURE_2D_OBJ &TEXTURE_2D_OBJECT_ARGUMENT TO A CONST TEXTURE_2D_OBJ &TEXTURE_2D_OBJECT_ARGGUMENT 
+	void Render_and_Draw_Spirte(const TEXTURE_2D_OBJ& texture_object_argument, glm::vec2 position_of_sprite_argument, glm::vec2 scale_size_argument = glm::vec2(10.0f, 10.0f), float rotation_degree_argument = 0.0f, glm::vec3 sprite_color_argument = glm::vec3(1.0));
 
 
 private: // all of our private data/function members
