@@ -27,8 +27,10 @@ GAME_BALL_OBJ *Game_Ball;
 bool Axis_Aligned_Bounding_Box_Collision_Check(IN_GAME_OBJ &first_in_game_obj_argument, IN_GAME_OBJ &second_in_game_obj_argument);
 
 // PROTOTYPE FUNCTION DECLARATIONS for Axis_Aligned_Bounding_Box_Collision_Check (OVERLOADED GAME_BALL_OBJ VERSION OF THIS FUNCTION FOR AABB - CIRCLE COLLISION CHECK) function only relevant to this C++ file
-bool Axis_Aligned_Bounding_Box_Collision_Check(GAME_BALL_OBJ &game_ball_obj_argument, IN_GAME_OBJ &second_in_game_obj_argument);
+BallCollision Axis_Aligned_Bounding_Box_Collision_Check(GAME_BALL_OBJ &game_ball_obj_argument, IN_GAME_OBJ &second_in_game_obj_argument);
 
+// PROTOTYPE FUNCTION DECLARATION for Ball_Bounce_Direction_GLM_Vector function only relevant to this C++ file
+BallBounceDirection Ball_Bounce_Direction_GLM_Vector(glm::vec2 glm_2_value_vector_argument);
 
 // use the game object contructor that takes as arguments the width and height that the game window should be
 // we also use a contructor member initalizer list with the Game_State ENUM, Key_Pressed_Buffer, and Height and Width of the screen data members. We set the Height and Width of the screen to their respective constructor arguments
@@ -161,6 +163,14 @@ void GAME_OBJ::Update_Game(float delta_time)
 
 	// call the member function Axis_Aligned_Bounding_Box_Collisions to update collisions with the ball and tiles/blocks/bricks in the game; if a collision happens and the block is destroyable, destroy the block
 	this->Axis_Aligned_Bounding_Box_Collisions();
+
+	// if the ball's y positional value is greater than or equal to the screen's dimensions, the player has lost and restart the level
+	if (Game_Ball->game_object_position.y >= this->Height_Of_Screen)
+	{
+		// call the related member functions that reset the level and player
+		this->Level_Reset();
+		this->Player_Reset();
+	}
 }
 
 // process player input function definition
@@ -275,6 +285,34 @@ void GAME_OBJ::Render_Game()
 
 }
 
+// level reset function definition
+void GAME_OBJ::Level_Reset()
+{
+	// simply load the level that is related to the provided level index using the provided members of GAME_OBJ and if else statements
+	if (this->Game_Level == 0)
+		this->Game_Levels[this->Game_Level].Level_Load("Resources/Levels/standard_level.level", this->Width_Of_Screen, this->Height_Of_Screen / 2);
+	else if (this->Game_Level == 1)
+		this->Game_Levels[this->Game_Level].Level_Load("Resources/Levels/gaps_level.level", this->Width_Of_Screen, this->Height_Of_Screen / 2);
+	else if (this->Game_Level == 2)
+		this->Game_Levels[this->Game_Level].Level_Load("Resources/Levels/space_invader_level.level", this->Width_Of_Screen, this->Height_Of_Screen / 2);
+	else if (this->Game_Level == 3)
+		this->Game_Levels[this->Game_Level].Level_Load("Resources/Levels/bounce_level.level", this->Width_Of_Screen, this->Height_Of_Screen / 2);
+}
+
+// player reset function definition
+void GAME_OBJ::Player_Reset()
+{
+	// set the player's scale size to the original header constant variable SCALE_SIZE_OF_PLAYER like in the constructor
+	Player_Object->game_object_scale_size = SCALE_SIZE_OF_PLAYER;
+
+	// now set the position of the player to the same values we used within the constructor as well 
+	Player_Object->game_object_position = glm::vec2(this->Width_Of_Screen / 2.0f - SCALE_SIZE_OF_PLAYER.x / 2.0f, this->Height_Of_Screen - SCALE_SIZE_OF_PLAYER.y);
+
+	// lastly reset the ball to its original position which is stuck to the player which is similar to the inital construction of the ball as well
+	// however this time we use the player's position stored within its data member as well as the BALL_OBJECT_PHYSICS_VELOCITY constant variable as arguments/parameters
+	Game_Ball->Ball_Reset(Player_Object->game_object_position + glm::vec2(SCALE_SIZE_OF_PLAYER.x / 2.0f - BALL_OBJECT_RADIUS, -BALL_OBJECT_RADIUS * 2.0f), BALL_OBJECT_PHYSICS_VELOCITY);
+}
+
 // axis aligned bounding box collisions function definition 
 void GAME_OBJ::Axis_Aligned_Bounding_Box_Collisions()
 {
@@ -287,19 +325,120 @@ void GAME_OBJ::Axis_Aligned_Bounding_Box_Collisions()
 	{
 		if (!brick_game_object_within_game_level_iterator.game_object_destroyed)
 		{
-			// if there is a collision detected between the Game_Ball and brick iterator's AABBs, remember to make the game ball have a value pointer to get the actual Ball_Object and not just the address
-			if (Axis_Aligned_Bounding_Box_Collision_Check(*Game_Ball, brick_game_object_within_game_level_iterator))
+			// call and store this function to determine there is a collision detected between the Game_Ball and brick iterator's AABBs, remember to make the game ball have a value pointer to get the actual Ball_Object and not just the address
+			BallCollision ball_and_brick_collision_tuple = Axis_Aligned_Bounding_Box_Collision_Check(*Game_Ball, brick_game_object_within_game_level_iterator);
+			
+			// get first value from ball_and_brick_collision_tuple to see if a collision has occured using the built-in function std::get and then the index position (which in our case is 0 (first value in tuple)
+			if (std::get<0>(ball_and_brick_collision_tuple))
 			{
-				// the collision has occured between the ball and brick iterator's AABBs, and the brick iterator is not a solid tile/block/brick within the game_object_solid data member, then change the game_object_destroyed data member member to true
+				// if the tile/brick/block isn't already destroyed
+				if (!brick_game_object_within_game_level_iterator.game_object_destroyed)
+					
+					// if tile/brick/block isn't solid, destroy it
 				if (!brick_game_object_within_game_level_iterator.game_object_solid)
 					
-					brick_game_object_within_game_level_iterator.game_object_destroyed = true; 
+					brick_game_object_within_game_level_iterator.game_object_destroyed = true;
+
+				// grab the 2nd value in the ball_and_brick_collision_tuple which is the Ball Bounce Direction enumeration value from the Ball_Bounce_Direction_GLM_Vector within the Axis_Aligned_Bounding_Box_Collision_Check return value
+				// again we use std::get and index at position 1 (second value in tuple) 
+				BallBounceDirection ball_bounce_direction = std::get<1>(ball_and_brick_collision_tuple);
+				// as well as get the ball collision difference 2-value GLM vector which is at position 2 within the tuple index using the same standard lib function
+				glm::vec2 ball_collision_difference_vector = std::get<2>(ball_and_brick_collision_tuple);
+
+				// check if there is a horizontal collision; meaning a if statment which if the ball_bounce_direction contains an enumeration value of DIRECTION_LEFT OR DIRECTION_RIGHT
+				if (ball_bounce_direction == DIRECTION_LEFT || ball_bounce_direction == DIRECTION_RIGHT)
+				{
+					// reverse (negate) the ball velocity's x value therfore making it bounce off the tile/block/brick
+					Game_Ball->game_object_physics_velocity.x = -Game_Ball->game_object_physics_velocity.x;
+
+					// move the ball to just before it enters the brick using the ball_collision_difference_vector to make it look like the ball "actually bounced" off the tile/block/brick (we call this the penertration value)
+					// we do this by taking the ball's raidus value and subtracting it by the absolute value of the ball_collision_difference_vector's x value
+					// the standard lib function std::abs gets the absolute value of a variable or int, float, double, etc. data type
+					// all an absolute value is the distance of a number from 0, for example |4| = 4 because its 4 to the right from zero, and |-6| = 6 because its 6 to the left from zero
+					// basically, an absolute value makes a negative number positive and leaves a positive number uneffected
+
+					float ball_penetration_value = Game_Ball->ball_radius - std::abs(ball_collision_difference_vector.x);
+					
+					// if the ball_bounce_direction enumeration value is equal to DIRECTION_LEFT (hit the left of the AABB), then we use addition compound assignment on the Ball position's x value with the ball penetration value
+					// (move the ball to the right)
+					if (ball_bounce_direction == DIRECTION_LEFT)
+						Game_Ball->game_object_position.x += ball_penetration_value;
+					// if not (ball_bounce direction hit the right of the AABB), then use the same logic as the prior if statment, but instead use subtraction compound assignment
+					// (move the ball to the left)
+					else
+						Game_Ball->game_object_position.x -= ball_penetration_value;
+				}
+				// if there is no horizontal collision, then it is a vertical collision
+				else
+				{
+					// same concept applies as the vertical collisions, but this time we use y values
+
+					// reverse (negate) the ball velocity's y value therfore making it bounce off the tile/block/brick
+					Game_Ball->game_object_physics_velocity.y = -Game_Ball->game_object_physics_velocity.y;
+
+					// move the ball to just before it enters the brick using the ball_collision_difference_vector to make it look like the ball "actually bounced" off the tile/block/brick (we call this the penertration value)
+					// we do this by taking the ball's raidus value and subtracting it by the absolute value of the ball_collision_difference_vector's y value
+
+					float ball_penetration_value = Game_Ball->ball_radius - std::abs(ball_collision_difference_vector.y);
+
+					// if the ball_bounce_direction is equal to DIRECTION_UP (hit the top of the AABB), then we use subtraction compound assignment on the Ball position's y value with the ball penetration value
+					// I ACTUALLY DON'T KNOW WHY WE DO SUBTRACTION COMPOUND ASSIGNMENT TO MOVE UP; WHEN TO MOVE UP ON A Y AXIS YOU NEED POSITIVE COORDIANTES; BUT MY BEST GUESS IS THAT WHEN YOU USE THE ABSOLUTE VALUE
+					// OF THE ball_collision_difference_vector, IF THE VALUE IS A NEGATIVE NUMBER, WHEN APPLIED WITH SUBTRACTION COMPOUND ASSIGNMENT WITH THE BALL POSITION'S Y VALUE IT MAKES A DOUBLE NEGATIVE WITH THE
+					// SUBTRACTION COMPOUND ASSIGNMENT OPERATOR THEREFORE MAKING IT POSSITIVE? (JUST A GUESS)
+
+					if (ball_bounce_direction == DIRECTION_UP)
+						Game_Ball->game_object_position.y -= ball_penetration_value;
+
+					// else statment means there is no other directions except for DIRECTION_DOWN; meaning the ball hit the bottom of the AABB, so use addition compound assignment on the Ball position's y value with the ball penetration value
+					// I ACTUALLY DON'T KNOW WHY WE DO ADDITION COMPOUND ASSIGNMENT TO MOVE DOWN; WHEN TO MOVE DOWN ON A Y AXIS YOU NEED NEGATIVE COORDIANTES; BUT MY BEST GUESS IS THAT WHEN YOU USE THE ABSOLUTE VALUE
+					// OF THE ball_collision_difference_vector, IF THE VALUE IS A NEGATIVE NUMBER, WHEN APPLIED WITH ADDITION COMPOUND ASSIGNMENT WITH THE BALL POSITION'S Y VALUE IT JUST LEAVES THE NEGATIVE VALUE AS NORMAL WITH THE
+					// ADDITION COMPOUND ASSIGNMENT OPERATOR THEREFORE MAKING IT NEGATIVE? (JUST A GUESS)
+					else
+					{
+						Game_Ball->game_object_position.y += ball_penetration_value;
+					}
+
+				}
 
 			}
 
 		}
 	}
 
+	// now determine if a collision has occured with the player_object to create the main gameplay aspect
+
+	// call and store this function to determine there is a collision detected between the Game_Ball and Player_Object AABBs, remember to make the game ball and player have a value pointer to get the actual Ball_Object/IN_GAME_Object and not just the addresses
+	BallCollision ball_and_player_collision_tuple = Axis_Aligned_Bounding_Box_Collision_Check(*Game_Ball, *Player_Object);
+
+	// if statment that checks if the ball is not stuck to the player and there has been a collision
+	// again using the std::get to index the data within ball_and_player_collision_tuple
+	if (!Game_Ball->ball_stuck && std::get<0>(ball_and_player_collision_tuple))
+	{
+		// get the center value of the player's position by taking the sum of the player position x value and the player scale size x value and dividing it by 2 (essentially cutting it in half)
+		float center_of_player = Player_Object->game_object_position.x + Player_Object->game_object_scale_size.x / 2.0f;
+		// get the distance between the ball and the center of the player by taking the sum of the ball's positon and radius x values and subtracting that from the center of the player value
+		float distance_between_ball_and_center_of_player = (Game_Ball->game_object_position.x + Game_Ball->ball_radius) - center_of_player;
+		// create a percentage variable that will determine how much velocity will be applied to the ball depending on where the ball is bounced off
+		// to do this we take the distance_between_ball_and_center_of_player and dividing that by half the player's x value scale size
+		float player_velocity_percentage = distance_between_ball_and_center_of_player / (Player_Object->game_object_scale_size.x / 2.0f);
+		// create a constant value that will dilute the amount of impact that the player_velocity_percentage will effect the velocity
+		float constant_velocity_strength_value = 2.0f;
+		// now store the original velocity values within a 2-value GLM vector to save for later
+		glm::vec2 original_velocity_values = Game_Ball->game_object_physics_velocity;
+		// now apply the prior variables to the Ball velocity's x value first, by taking the header constant variable BALL_OBJECT_PHYSICS_VELOCITY's x value that we used for the constructor of our ball object and multiplying
+		// it by the player_velocity_percentage as well as the constant_velocity_strength_value
+		Game_Ball->game_object_physics_velocity.x = BALL_OBJECT_PHYSICS_VELOCITY.x * player_velocity_percentage * constant_velocity_strength_value;
+
+		// to prevent the ball from sticking inside the player, multiply  -1.0f by the absolute value of the ball velocity's y value
+		// this makes sure we always return a positive y velocity value so if the ball gets stuck in the player it can escape
+		// we can only do this to the player because ball always collides with the top of the player's AABB
+		Game_Ball->game_object_physics_velocity.y = -1.0f * std::abs(Game_Ball->game_object_physics_velocity.y);
+
+		// now within both values within the ball's velocity vector, normalize the current velocity vector (make the length/magnitude/homogenous coordinate (coordinate w) to a value of 1) and multiply it by 
+		// the length of the original_velocity_values 2-value GLM vector
+		Game_Ball->game_object_physics_velocity = glm::normalize(Game_Ball->game_object_physics_velocity) * glm::length(original_velocity_values);
+
+	}
 }
 
 
@@ -342,7 +481,7 @@ bool Axis_Aligned_Bounding_Box_Collision_Check(IN_GAME_OBJ &first_in_game_obj_ar
 
 // OVERLOADED VERSION OF THE PRIOR FUNCTION THAT CHECKS FOR CIRCLE AABB COLLISION DETECTION
 // we use a GAME_BALL_OBJ for our our first argument/parameter instead of a IN_GAME_OBJ
-bool Axis_Aligned_Bounding_Box_Collision_Check(GAME_BALL_OBJ &game_ball_obj_argument, IN_GAME_OBJ &second_in_game_obj_argument)
+BallCollision Axis_Aligned_Bounding_Box_Collision_Check(GAME_BALL_OBJ &game_ball_obj_argument, IN_GAME_OBJ &second_in_game_obj_argument)
 {
 	// some prior knowledge, 
 	// Radius: the distance from the center of a circle to any point on its circumference (the outer parrt of a circle), we defined this earlier within the GAME_BALL_OBJ data member ball_radius 
@@ -370,11 +509,71 @@ bool Axis_Aligned_Bounding_Box_Collision_Check(GAME_BALL_OBJ &game_ball_obj_argu
 	glm::vec2 closest_point_between_aabb_and_ball = axis_aligned_bounding_box_center_point + clamp_difference_between_ball_center_point_and_aabb_center_point_to_half_extents;
 
 	// now get the difference between closest_point_between_aabb_and_ball and the ball_center_point to determine if the length of this 2-value GLM vector is less then the GAME_BALL_OBJ's radius (thus a collision happens)
-	glm::vec2 difference_between_closest_point_between_aabb_and_ball_and_ball_center_point = closest_point_between_aabb_and_ball - ball_center_point;
+	glm::vec2 difference_between_closest_point_between_aabb_and_ball_center_point = closest_point_between_aabb_and_ball - ball_center_point;
 
-	// use glm::length (which measures the length/magnitude of a glm vector) to see if this value is less than the GAME_BALL_OBJ's radius this will return a boolan value that if true a collision has occurred, if not, a collision has not occured
-	return glm::length(difference_between_closest_point_between_aabb_and_ball_and_ball_center_point) < game_ball_obj_argument.ball_radius;
+	// use glm::length (which measures the length/magnitude of a glm vector) to see if this value is less than the GAME_BALL_OBJ's radius this will return a tuple
+	// of the boolan value that if true a collision has occurred, if not, a collision has not occured, the enum BallBounce Direction result of the Ball_Bounce_Direction_GLM_Vector function,
+	// and the difference_between_closest_point_between_aabb_and_ball_center_point 2-value GLM vector from this function
+	if (glm::length(difference_between_closest_point_between_aabb_and_ball_center_point) < game_ball_obj_argument.ball_radius)
+		// use the standard built-in function std::make_tuple to return a BallCollision datatype
+		return std::make_tuple(true, Ball_Bounce_Direction_GLM_Vector(difference_between_closest_point_between_aabb_and_ball_center_point), difference_between_closest_point_between_aabb_and_ball_center_point);
 
+	// else, return a tuple that has the values false, the UP enumeration value (just a place holder), and a 2-value GLM vector with x and y coorrdinates of 0.0
+	else
+		return std::make_tuple(false, DIRECTION_UP, glm::vec2(0.0f, 0.0f));
+		
+}
 
+// define a enumeration function that is only relevant to this C++ file that calculates the direction that the ball hits 
+// for example, we want the ball's x velocity coordinate value to be reversed if a collision happens on the sides of the AABB
+// as well as we want the ball's y velocity coordinate value to be reversed if a collision happens on the top or bottom of the AABB
+/* 
 
+we get this by using the dot product (multiplying two vectors by their respective coordinate (i.e. (x, y, z) * (x, y, z) = (x * x), (y * y), (z * z)) and then adding these results together
+to get a float value making the full equation: (x, y, z) * (x, y, z) = (x * x) +  (y * y) + (z * z) = float result)
+
+we use the argument/parameter of this function to get a dot product value between this 2-value GLM vector and all 4 "game (aka world) directional position" vectors that point up, down, left, and right
+
+once that value is generated it is compared by a maxiumum value (degree) and if that value is greater than the maximum value, that dot product value is now the new maximum value and
+we return the iterator which indexes the direction enumeration at where the ball bounced. 
+*/ 
+BallBounceDirection Ball_Bounce_Direction_GLM_Vector(glm::vec2 glm_2_value_vector_argument)
+{
+	// create a 2-value GLM vector array that stores the "game position directional vectors"
+	glm::vec2 game_position_directional_vectors[]
+	{
+		glm::vec2(0.0f, 1.0f),  // vector pointing up
+		glm::vec2(1.0f, 0.0f),  // vector pointing right
+		glm::vec2(0.0f, -1.0f), // vector pointing down
+		glm::vec2(-1.0f, 0.0f)  // vector pointing right
+	};
+
+	// create a float variable of 0.0f
+	float maxiumum_value = 0.0f;
+
+	// create an unsigned int variable of the value -1 which is good practice becuase unsigned int variables cannot be negative so this prevents weird from happening with this variable
+	// this will represent way for us to index the direction enumeration that bests fits our dot product value
+
+	unsigned int direction_enumeration_that_best_matches_ball_direction_upon_collision_with_aabb = -1;
+
+	// for loop iterator that will loop through all dot products between our function argument/parameter and the game_position_directional_vectors array
+	for (unsigned int iterator_for_dot_products_and_direction_enumerations = 0; iterator_for_dot_products_and_direction_enumerations < 4; iterator_for_dot_products_and_direction_enumerations++)
+	{
+		// calculate our dot products with the GLM function and index our game_position_directional_vectors with the iterator
+		// don't forget to normalize the argument/parameter 2-value vector to ensure its length/magnitude/(homogenous value w) is a length of 1
+		float value_of_dot_product = glm::dot(glm::normalize(glm_2_value_vector_argument), game_position_directional_vectors[iterator_for_dot_products_and_direction_enumerations]);
+	
+		// if statment if the dot product value is greater than the maximum_value
+		if (value_of_dot_product > maxiumum_value)
+		{
+			// current dot product value is now the maximum value
+			maxiumum_value = maxiumum_value;
+
+			// use the iterator again to index for the enumeration return value which direction the ball is at
+			direction_enumeration_that_best_matches_ball_direction_upon_collision_with_aabb = iterator_for_dot_products_and_direction_enumerations;
+		}
+	}
+
+	// after the for loop is finished, return the BallBounceDirection that best matches where the ball direction is upon collision with the direction_enumeration_that_best_matches_ball_direction_upon_collision_with_aabb as the index value
+	return (BallBounceDirection)direction_enumeration_that_best_matches_ball_direction_upon_collision_with_aabb;
 }

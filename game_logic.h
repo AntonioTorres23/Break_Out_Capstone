@@ -4,6 +4,7 @@
 #include <glad/glad.h>  // include GLAD; a lib that loads the addresses of OpenGL function pointers
 #include <GLFW/glfw3.h> // include glfw3; a lib that ties OpenGL to a window and callback functions within a window
 #include <vector>		// don't get this confused with a glm vector, this is a standard library that allows us to organize and store variables/objects in a more efficient way; it has methods that make parsing through this data much easier than something like an array 
+#include <tuple>		// include tuple, a standard librarry that allows for the creation of tuples, a FIXED-sized collection of various values
 
 #include "game_level_logic.h" // include the game_level_logic header file to access the GAME_LEVEL_OBJ class 
 
@@ -14,6 +15,20 @@ enum CurrentStateOfGame
 	MENU_GAME,
 	WINDOW_GAME
 };
+
+// Enumerations that represent the ball's bouncing direction off an object's AABB once a collision occurs
+enum BallBounceDirection
+{
+	DIRECTION_UP,
+	DIRECTION_RIGHT,
+	DIRECTION_DOWN,
+	DIRECTION_LEFT
+};
+
+// a tuple that will store everything needed to calculate a collision as well as resolution of the collision (physics like the ball bouncing off of tiles/blocks/bricks
+// we use the typedef keyword to define the tuple provided as a data type to use for things like functions or creating objects/vars based on the tuple
+// the tuple takes 3 parameters: a boolean value to see if a collision is true or false, a BallBounceDirection enumeration to see where the ball bounced off an AABB, and a 2-value GLM vector to store the position of the ball upon collision (difference vector)
+typedef std::tuple<bool, BallBounceDirection, glm::vec2> BallCollision; 
 
 // Constant variables that store the player's scale size and player's velocity for use in the game_logic c++ file
 
@@ -54,6 +69,10 @@ public: // all public members/functions
 	void Render_Game();                 // renders the game on the players screen
 
 	void Axis_Aligned_Bounding_Box_Collisions(); // function that processes game behavior if a collision occurs with two objects 
+
+	void Level_Reset(); // function that resets level after player has lost ball
+
+	void Player_Reset(); // function that resets player position after player has lost ball
 
 };
 
