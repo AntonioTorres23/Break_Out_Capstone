@@ -42,6 +42,9 @@
     <ClInclude Include="game_ball.h">
       <Filter>source_code</Filter>
     </ClInclude>
+    <ClInclude Include="generate_particles.h">
+      <Filter>source_code</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -77,12 +80,21 @@
     <ClCompile Include="game_ball.cpp">
       <Filter>source_code</Filter>
     </ClCompile>
+    <ClCompile Include="generate_particles.cpp">
+      <Filter>source_code</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\sprite_test.vert">
       <Filter>source_code\Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\sprite_test.frag">
+      <Filter>source_code\Shaders</Filter>
+    </None>
+    <None Include="particle_shader.vert">
+      <Filter>source_code\Shaders</Filter>
+    </None>
+    <None Include="particle_shader.frag">
       <Filter>source_code\Shaders</Filter>
     </None>
   </ItemGroup>

@@ -22,6 +22,7 @@
     <ClInclude Include="game_ball.h" />
     <ClInclude Include="game_level_logic.h" />
     <ClInclude Include="game_logic.h" />
+    <ClInclude Include="generate_particles.h" />
     <ClInclude Include="in_game_obj.h" />
     <ClInclude Include="process_shader.h" />
     <ClInclude Include="process_texture.h" />
@@ -33,6 +34,7 @@
     <ClCompile Include="game_ball.cpp" />
     <ClCompile Include="game_level_logic.cpp" />
     <ClCompile Include="game_logic.cpp" />
+    <ClCompile Include="generate_particles.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="in_game_obj.cpp" />
     <ClCompile Include="main.cpp" />
@@ -43,6 +45,8 @@
     <ClCompile Include="stb_image_init.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="particle_shader.frag" />
+    <None Include="particle_shader.vert" />
     <None Include="Resources\Shaders\sprite_test.frag" />
     <None Include="Resources\Shaders\sprite_test.vert" />
   </ItemGroup>
