@@ -66,8 +66,8 @@ private: // private data/function members
 	// private data member that represents a particle's Vertex Array Object
 	unsigned int particle_vertex_array_object;
 
-	// private function member that initalizes a particle's vertex data
-	void vertex_data_initialize();
+	// private function member that initalizes a particle's vertex data as well as its structure data
+	void vertex_data_and_particle_data_initialize();
 
 	// unsigned int private function member that will return the first single_particle within the multiple_particles standard lib vector by using an index. 
 	// the life data member will by less than or equal to 0.0 if no particle is currrently inactive
