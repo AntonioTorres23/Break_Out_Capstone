@@ -17,10 +17,7 @@ uniform sampler2D texture_image;
 void main()
 {
 	// use our output_color variable to output the texture_image with our texture coordinates and our color_of_particle to change the overall RGBA tone through multiplication
-	//output_color = vec4(1.0, 0.0, 0.0, 1.0);
 	output_color = (texture(texture_image, sprite_texture_coordinates) * color_of_particle);
-	
-
 } 
 
 

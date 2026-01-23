@@ -63,10 +63,12 @@ void GAME_OBJ::Initalize_Game()
 	glm::mat4 sprite_orthographic_projection_matrix = glm::ortho(0.0f, static_cast<float>(this->Width_Of_Screen), static_cast<float>(this->Height_Of_Screen), 0.0f, -1.0f, 0.0f);
 	// get the shader via the mapped_shader name with the resource manager static function Shader_Get and both activate the shader/set the sampler2D uniform variable to GL_ACTIVETEXTURE0
 	RESOURCE_MANAGER::Shader_Get("sprite_test").Activate().uniform_integer("texture_image", 0);
-	RESOURCE_MANAGER::Shader_Get("particle_shader").Activate().uniform_integer("texture_image", 0);
 	// now set the sprite_orthographic_projection_matrix we defined here to be sent to the fragment shader uniform variable of the same name
 	RESOURCE_MANAGER::Shader_Get("sprite_test").uniform_matrix_4("sprite_orthographic_projection_matrix", sprite_orthographic_projection_matrix);
+	
+	RESOURCE_MANAGER::Shader_Get("particle_shader").Activate().uniform_integer("texture_image", 0);
 	RESOURCE_MANAGER::Shader_Get("particle_shader").uniform_matrix_4("sprite_orthographic_projection_matrix", sprite_orthographic_projection_matrix);
+
 	// create a temporary shader object that stores the same sprite test shader but within an l-value object
 	
 	//SHADER_OBJ dynamic_memory_sprite_test_shader_object;
@@ -105,9 +107,6 @@ void GAME_OBJ::Initalize_Game()
 	*/
 
 	Sprite_Render = new RENDER_SPRITE_OBJ(RESOURCE_MANAGER::Shader_Get("sprite_test"));
-
-	// now with our particle_generator pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the GEN_PARTICLES_OBJ constructor object to the particle_generator pointer object
-	Generate_Particles = new GEN_PARTICLES_OBJ(RESOURCE_MANAGER::Shader_Get("sprite_shader"), RESOURCE_MANAGER::Texture_Get("sprite_object"), 500);
 
 	// load texture(s) which will represent our sprite(s) with the resource manager static function Texture_Load
 	RESOURCE_MANAGER::Texture_Load("Resources/Textures/background.jpg", false, "game_background");
@@ -160,6 +159,9 @@ void GAME_OBJ::Initalize_Game()
 
 	// now with our ball_object pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the GAME_BALL_OBJ constructor object to the ball_object pointer object 
 	Game_Ball = new GAME_BALL_OBJ(position_of_ball, BALL_OBJECT_RADIUS, BALL_OBJECT_PHYSICS_VELOCITY, RESOURCE_MANAGER::Texture_Get("game_ball"));
+
+	// now with our particle_generator pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the GEN_PARTICLES_OBJ constructor object to the particle_generator pointer object
+	Generate_Particles = new GEN_PARTICLES_OBJ(RESOURCE_MANAGER::Shader_Get("particle_shader"), RESOURCE_MANAGER::Texture_Get("particle_object"), 500);
 }
 
 // game update of player movement and ball location function definition
@@ -172,8 +174,7 @@ void GAME_OBJ::Update_Game(float delta_time)
 	this->Axis_Aligned_Bounding_Box_Collisions();
 
 	// update the amount of particles on screen and their life, date the delta time, pointer value of the Ball as our game object, the number of new particles to be created, and an offset of half the ball's radius
-	// EXAMEN THIS FUNCTION TOMMOROW
-	// Generate_Particles->Particles_Update(delta_time, *Game_Ball, 2, glm::vec2(Game_Ball->ball_radius / 2.0f));
+	Generate_Particles->Particles_Update(delta_time, *Game_Ball, 2, glm::vec2(Game_Ball->ball_radius / 2.0f));
 
 	// if the ball's y positional value is greater than or equal to the screen's dimensions, the player has lost and restart the level
 	if (Game_Ball->game_object_position.y >= this->Height_Of_Screen)

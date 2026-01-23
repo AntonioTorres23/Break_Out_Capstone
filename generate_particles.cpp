@@ -28,7 +28,7 @@ void GEN_PARTICLES_OBJ::Particles_Update(float delta_time, IN_GAME_OBJ& game_obj
 	}
 
 	// update all the particles that are inside the multiple_particles vector
-	for (unsigned int particle_iterator = 0; this->amount_of_particles; ++particle_iterator)
+	for (unsigned int particle_iterator = 0; particle_iterator < this->amount_of_particles; ++particle_iterator)
 	{
 		// create a single_particle object that stores the address of a single_particle object indexed within the multiple_particles standard_lib
 		Single_Particle& single_particle_object_address = this->multiple_particles[particle_iterator];
@@ -166,7 +166,7 @@ unsigned int GEN_PARTICLES_OBJ::unused_first_particle()
 	//
 	// if the function reaches the last part of the function, that typically means that the particles are alive for too long and thus 
 	// you would have to spawn less particles per frame and or reserve a larger number of particles overall
-	for (unsigned int first_unused_particle_iterator = particle_last_used; this->amount_of_particles; ++first_unused_particle_iterator)
+	for (unsigned int first_unused_particle_iterator = particle_last_used; first_unused_particle_iterator < this->amount_of_particles; ++first_unused_particle_iterator)
 		// if the particle's life data member is less than or equal to 0.0, then it is is considered dead
 		if (this->multiple_particles[first_unused_particle_iterator].single_particle_life <= 0.0f)
 		{
