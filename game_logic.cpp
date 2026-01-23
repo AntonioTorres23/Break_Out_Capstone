@@ -5,7 +5,7 @@
 #include "render_sprite.h" // include render_sprite header file to allow for RENDER_SPRITE_OBJ to be created in the game_logic c++ file
 #include "in_game_obj.h"   // include in_game_obj header file to allow for IN_GAME_OBJ to be created in the game_logic c++ file
 #include "game_ball.h"    // include game_ball header file to allow for GAME_BALL_OBJ to be created in the game_logic c++ file
-
+#include "generate_particles.h" // include generate_particles header file to allow for GEN_PARTICLES_OBJ to be created in the game_logic c++ file
 
 #include <iostream>
 
@@ -21,7 +21,8 @@ RENDER_SPRITE_OBJ *Sprite_Render;
 IN_GAME_OBJ *Player_Object; 
 // create a GAME_BALL_OBJ non-contructed pointer object that will represent the breakout ball
 GAME_BALL_OBJ *Game_Ball;
-
+// create a GEN_PARTICLES_OBJ non-contructed pointer object that will represent the breakout ball
+GEN_PARTICLES_OBJ *Generate_Particles;
 
 // PROTOTYPE FUNCTION DECLARATIONS for Axis_Aligned_Bounding_Box_Collision_Check function only relevant to this C++ file
 bool Axis_Aligned_Bounding_Box_Collision_Check(IN_GAME_OBJ &first_in_game_obj_argument, IN_GAME_OBJ &second_in_game_obj_argument);
@@ -49,6 +50,7 @@ GAME_OBJ::~GAME_OBJ()
 	delete Sprite_Render;
 	delete Player_Object;
 	delete Game_Ball;
+	delete Generate_Particles;
 }
 
 // game initazlier function definition
@@ -56,13 +58,15 @@ void GAME_OBJ::Initalize_Game()
 {
 	// load the shaders provided with the static function shader_load from the resource_manager header file
 	RESOURCE_MANAGER::Shader_Load("Resources/Shaders/sprite_test.vert", "Resources/Shaders/sprite_test.frag", nullptr, "sprite_test");
+	RESOURCE_MANAGER::Shader_Load("Resources/Shaders/particle_shader.vert", "Resources/Shaders/particle_shader.frag", nullptr, "particle_shader");
 	// set a orthographic projection matrix to the dimensions of the screen from our related public data members statically casted to a float value and a near distance of -1 and a far distance of 1 which are Normalized Device Coordinates
 	glm::mat4 sprite_orthographic_projection_matrix = glm::ortho(0.0f, static_cast<float>(this->Width_Of_Screen), static_cast<float>(this->Height_Of_Screen), 0.0f, -1.0f, 0.0f);
 	// get the shader via the mapped_shader name with the resource manager static function Shader_Get and both activate the shader/set the sampler2D uniform variable to GL_ACTIVETEXTURE0
 	RESOURCE_MANAGER::Shader_Get("sprite_test").Activate().uniform_integer("texture_image", 0);
+	RESOURCE_MANAGER::Shader_Get("particle_shader").Activate().uniform_integer("texture_image", 0);
 	// now set the sprite_orthographic_projection_matrix we defined here to be sent to the fragment shader uniform variable of the same name
 	RESOURCE_MANAGER::Shader_Get("sprite_test").uniform_matrix_4("sprite_orthographic_projection_matrix", sprite_orthographic_projection_matrix);
-	
+	RESOURCE_MANAGER::Shader_Get("particle_shader").uniform_matrix_4("sprite_orthographic_projection_matrix", sprite_orthographic_projection_matrix);
 	// create a temporary shader object that stores the same sprite test shader but within an l-value object
 	
 	//SHADER_OBJ dynamic_memory_sprite_test_shader_object;
@@ -102,13 +106,16 @@ void GAME_OBJ::Initalize_Game()
 
 	Sprite_Render = new RENDER_SPRITE_OBJ(RESOURCE_MANAGER::Shader_Get("sprite_test"));
 
+	// now with our particle_generator pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the GEN_PARTICLES_OBJ constructor object to the particle_generator pointer object
+	Generate_Particles = new GEN_PARTICLES_OBJ(RESOURCE_MANAGER::Shader_Get("sprite_shader"), RESOURCE_MANAGER::Texture_Get("sprite_object"), 500);
+
 	// load texture(s) which will represent our sprite(s) with the resource manager static function Texture_Load
 	RESOURCE_MANAGER::Texture_Load("Resources/Textures/background.jpg", false, "game_background");
 	RESOURCE_MANAGER::Texture_Load("Resources/Textures/awesomeface.png", true, "game_ball");
 	RESOURCE_MANAGER::Texture_Load("Resources/Textures/block.png", false, "block_destroyable");
 	RESOURCE_MANAGER::Texture_Load("Resources/Textures/block_solid.png", false, "solid_block");
 	RESOURCE_MANAGER::Texture_Load("Resources/Textures/paddle.png", true, "player_object");
-
+	RESOURCE_MANAGER::Texture_Load("Resources/Textures/particle.png", true, "particle_object");
 	// create the GAME_LEVEL_OBJ(s) and load the level(s) via the corresponding member function Level_Load method within a GAME_LVL_OBJ
 	GAME_LEVEL_OBJ level_one; 
 	// notice how we half our height of window/screen dimensions for our corresponding Level_Load parameter/argument because we want the tiles/blocks/bricks to be further up towards the top of the screen (at least I think that's why)
@@ -163,6 +170,10 @@ void GAME_OBJ::Update_Game(float delta_time)
 
 	// call the member function Axis_Aligned_Bounding_Box_Collisions to update collisions with the ball and tiles/blocks/bricks in the game; if a collision happens and the block is destroyable, destroy the block
 	this->Axis_Aligned_Bounding_Box_Collisions();
+
+	// update the amount of particles on screen and their life, date the delta time, pointer value of the Ball as our game object, the number of new particles to be created, and an offset of half the ball's radius
+	// EXAMEN THIS FUNCTION TOMMOROW
+	// Generate_Particles->Particles_Update(delta_time, *Game_Ball, 2, glm::vec2(Game_Ball->ball_radius / 2.0f));
 
 	// if the ball's y positional value is greater than or equal to the screen's dimensions, the player has lost and restart the level
 	if (Game_Ball->game_object_position.y >= this->Height_Of_Screen)
@@ -277,9 +288,14 @@ void GAME_OBJ::Render_Game()
 
 			Player_Object->Game_Object_Draw(*Sprite_Render);
 
+			// NOW DRAW AND RENDER PARTICLES BEFORE DRAWING BALL
+			Generate_Particles->Render_And_Draw_Particles();
+
 			// NOW DRAW AND RENDER THE BALL
 			
 			Game_Ball->Game_Object_Draw(*Sprite_Render);
+
+			
 	}
 
 

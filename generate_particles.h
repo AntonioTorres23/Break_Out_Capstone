@@ -39,7 +39,7 @@ class GEN_PARTICLES_OBJ
 public: // public data/function members
 
 	// constructor of GEN_PARTICLES_OBJ that takes a SHADER_OBJ address, TEXTURE_2D_OBJ address, and a unsigned integer which specifies the amount of particles desired as our parameters/arguments
-	GEN_PARTICLES_OBJ(SHADER_OBJ& particle_shader_argument, TEXTURE_2D_OBJ& texture_argument, unsigned int number_of_particles_argument);
+	GEN_PARTICLES_OBJ(const SHADER_OBJ& particle_shader_argument, const TEXTURE_2D_OBJ& texture_argument, unsigned int number_of_particles_argument);
 
 	// public member void function that updates all current particles as well as thier attributes
 	// parameters/arguments: 1. a delta time argument/parameter, 2. an IN_GAME_OBJ address argument/parameter, 3. unsigned int parameter that represents the new amount of desired particles particles argument/parameter

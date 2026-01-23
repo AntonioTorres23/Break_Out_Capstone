@@ -8,7 +8,7 @@ THE FUNCTIONS THAT ARE STORED IN THE HEADER FILE ARE REALLY ONLY PROTOTYPES
 // define the constructor for GEN_PARTICLES_OBJ; also use a member initalizer list
 // basically, we're initializing data members within the class with the related arguments/parameters in this context
 // we use a contstructor member initalizer list because it allows us to set the values of data members prior to the body of the constructor executing
-GEN_PARTICLES_OBJ::GEN_PARTICLES_OBJ(SHADER_OBJ& particle_shader_argument, TEXTURE_2D_OBJ& texture_argument, unsigned int number_of_particles_argument) : particle_shader(particle_shader_argument), particle_texture(texture_argument), amount_of_particles(number_of_particles_argument)
+GEN_PARTICLES_OBJ::GEN_PARTICLES_OBJ(const SHADER_OBJ& particle_shader_argument, const TEXTURE_2D_OBJ& texture_argument, unsigned int number_of_particles_argument) : particle_shader(particle_shader_argument), particle_texture(texture_argument), amount_of_particles(number_of_particles_argument)
 {
 	// once a GEN_PARTICLE_OBJ is created, call the vertex_data_initialize private member function
 	this->vertex_data_and_particle_data_initialize();
@@ -28,7 +28,7 @@ void GEN_PARTICLES_OBJ::Particles_Update(float delta_time, IN_GAME_OBJ& game_obj
 	}
 
 	// update all the particles that are inside the multiple_particles vector
-	for (unsigned int particle_iterator; this->amount_of_particles; ++particle_iterator)
+	for (unsigned int particle_iterator = 0; this->amount_of_particles; ++particle_iterator)
 	{
 		// create a single_particle object that stores the address of a single_particle object indexed within the multiple_particles standard_lib
 		Single_Particle& single_particle_object_address = this->multiple_particles[particle_iterator];
@@ -48,6 +48,43 @@ void GEN_PARTICLES_OBJ::Particles_Update(float delta_time, IN_GAME_OBJ& game_obj
 	}
 }
 
+// define the Render_And_Draw_Particles public member function
+void GEN_PARTICLES_OBJ::Render_And_Draw_Particles()
+{
+	// set blending in OpenGL of the source factor's alpha value to its default value, and the destination factor's alpha value to a value of 1
+	// this gives it a "glowing" effect I belive because if the sources alpha value is 1 (or less) and the destinations alpha value is one, once you do
+	// the multiplication of thier respective alpha values to thier respective color vectors and add the two RGBA vectors together, the resulting
+	// blended color vector will have values higher than 1.0f thus putting it in high dynamic range which we have not configured for this project
+	// that gives the color outputted via the fragment shader a super bright/glowing appearance
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+	// activate the particle shader program stored within this class
+	this->particle_shader.Activate();
+	// create a for loop with a single particle iterator that goes through all single particles stored in the multiple_particles public data member standard lib vector
+	for (Single_Particle single_particle_iterator : this->multiple_particles)
+	{
+		// if a single particle in multiple particles is alive (life data member greater than one) then draw and render it on screen
+		if (single_particle_iterator.single_particle_life > 0.0f)
+		{
+			// set the uniform 2-value glm vector variable in the particle vertex shader titled offset_of_particle to the positional glm vector stored in a single particle object
+			this->particle_shader.uniform_vector_2("offset_of_particle", single_particle_iterator.single_particle_position);
+			// set the uniform 4-value glm vector variable in the particle vertex shader titled particle_color to the color glm vector stored in a single particle object
+			this->particle_shader.uniform_vector_4("particle_color", single_particle_iterator.single_particle_color);
+			// bind the particle texture that is stored within the GEN_PARTICLES_OBJ so it can be sent to the particle fragment shader
+			this->particle_texture.Bind_Texture();
+			// bind the vertex array object private data member that is stored within GEN_PARTICLES_OBJ
+			glBindVertexArray(this->particle_vertex_array_object);
+			// draw the particle onto the game screen
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			// unbind the particle_vertex_array_object
+			glBindVertexArray(0);
+
+		}
+	}
+	// set the blending mode back to OpenGL's default (desination factor set to 1 - src alpha value)
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+}
 
 // define the vertex_data_and_particle_data_initialize private member function
 void GEN_PARTICLES_OBJ::vertex_data_and_particle_data_initialize()
@@ -152,4 +189,27 @@ unsigned int GEN_PARTICLES_OBJ::unused_first_particle()
 	// if all particles are alive or have a life data member value greater than 0.0, override the first particle in index 0 which if happens in many cases, more particles should be reserved
 	particle_last_used = 0;
 	return 0; 
+}
+
+// define the particle_respawn private member function 
+void GEN_PARTICLES_OBJ::particle_respawn(Single_Particle& single_particle_object_argument, IN_GAME_OBJ& game_object_argument, glm::vec2 particle_offset_argument)
+{
+	// create a float variable that will generate a random value by the remainder of 100, subtract that value by 50, and then divided by 10
+	// don't use float values inside the parenthesis because the random built-in c++ functinon only works with int values, I know its weird but that's just how it works
+	float random_value = ((rand() % 100) - 50) / 10.0f;
+	// use the similar process for the next variable but you divide the random remainder value by 100 as well as take the sum of that value and 0.5
+	// this will represent a random color value for the particle
+	float random_color_value = 0.5f + ((rand() % 100) / 100.0f);
+
+	// to set the position of a new particle, we take the current position of the game_object_argument and add that by the previous random value as well as the particle_offset_argument
+	single_particle_object_argument.single_particle_position = game_object_argument.game_object_position + random_value + particle_offset_argument;
+
+	// to set the color of a new particle, we take a 4-value glm vector and for the RGB components we will add the random_color_value float variable in thier place, as well as a value of 1.0f for the Alpha value
+	single_particle_object_argument.single_particle_color =  glm::vec4(random_color_value, random_color_value, random_color_value, 1.0f);
+
+	// set the life of the new particle to fully alive (aka a value of 1)
+	single_particle_object_argument.single_particle_life = 1.0f;
+
+	// set the physics_velocity of the new particle to the product of the game_object_argument's velocity and the float value of 0.1f
+	single_particle_object_argument.single_particle_physics_velocity = game_object_argument.game_object_physics_velocity * 0.1f;
 }
