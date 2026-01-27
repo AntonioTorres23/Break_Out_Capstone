@@ -47,6 +47,8 @@
   <ItemGroup>
     <None Include="particle_shader.frag" />
     <None Include="particle_shader.vert" />
+    <None Include="post_processing.frag" />
+    <None Include="post_processing.vert" />
     <None Include="Resources\Shaders\sprite_test.frag" />
     <None Include="Resources\Shaders\sprite_test.vert" />
   </ItemGroup>
