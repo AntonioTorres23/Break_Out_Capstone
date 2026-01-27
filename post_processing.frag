@@ -1,4 +1,4 @@
-// post processing fragment shader that takes a framebuffer object and manipulates the visuals on scrreen to be outputted on a screen-filled 2D quad via a texture
+// post processing fragment shader that takes a framebuffer object and manipulates the visuals on scrreen to be outputted on a screen-filled 2D quad via a texture 
 #version 330 core // specifies we are using the core profile of OpenGL ver. 3.3
 // take in the framebuffer_screen_quad_texture_coordiantes from the vertex shader to use them within this fragment shader
 in vec2 framebuffer_screen_quad_texture_coordiantes;

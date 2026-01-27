@@ -1,4 +1,4 @@
-// post processing vertex shader that takes a framebuffer object and manipulates the visuals on scrreen to be outputted on a screen-filled 2D quad via a texture
+// post processing vertex shader that takes a framebuffer object and manipulates the visuals on scrreen to be outputted on a screen-filled 2D quad via a texture 
 #version 330 core // specifies we are using the core profile of OpenGL ver. 3.3
 
 // our vbo attribute pointer location which contains both the screen-filled quad vertex data as well as its texture coordinates for the frame buffer object texture
