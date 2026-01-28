@@ -69,7 +69,7 @@ void main()
 		framebuffer_screen_quad_texture_coordiantes =  texture_coordiantes_in_vertex_shader;
 	}
 	// if shake uniform boolean value is true, offset the positional coordiantes of the quad within gl_Position
-	if (shake)
+	if (post_processing_effect_screen_shake)
 	{
 		// create a screen_shake_strength variable that will store a constant float value to offset the positional coordinates
 		float screen_shake_strength = 0.01;
