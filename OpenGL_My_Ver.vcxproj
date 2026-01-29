@@ -24,6 +24,7 @@
     <ClInclude Include="game_logic.h" />
     <ClInclude Include="generate_particles.h" />
     <ClInclude Include="in_game_obj.h" />
+    <ClInclude Include="post_processing.h" />
     <ClInclude Include="process_shader.h" />
     <ClInclude Include="process_texture.h" />
     <ClInclude Include="render_sprite.h" />
@@ -38,6 +39,7 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="in_game_obj.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="post_processing.cpp" />
     <ClCompile Include="process_shader.cpp" />
     <ClCompile Include="process_texture.cpp" />
     <ClCompile Include="render_sprite.cpp" />

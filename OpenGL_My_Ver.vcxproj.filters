@@ -45,6 +45,9 @@
     <ClInclude Include="generate_particles.h">
       <Filter>source_code</Filter>
     </ClInclude>
+    <ClInclude Include="post_processing.h">
+      <Filter>source_code</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -81,6 +84,9 @@
       <Filter>source_code</Filter>
     </ClCompile>
     <ClCompile Include="generate_particles.cpp">
+      <Filter>source_code</Filter>
+    </ClCompile>
+    <ClCompile Include="post_processing.cpp">
       <Filter>source_code</Filter>
     </ClCompile>
   </ItemGroup>
