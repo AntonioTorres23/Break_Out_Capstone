@@ -34,7 +34,7 @@ POST_PROCESSING_OBJ::POST_PROCESSING_OBJ(SHADER_OBJ shader_object_argument, unsi
 	// attach the data member texture object to the regular framebuffer object as its color attachment
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->Post_Processing_Texture_Object.texture_ID, 0);
 	// check if the currently bound regular framebuffer object initialization was successful
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "ERROR::POST_PROCESSING::FRAMEBUFFER::FAILED_TO_INITIALIZE_FRAMEBUFFER_OBJECT" << std::endl;
 	// unbind current regular framebuffer object
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -92,4 +92,119 @@ POST_PROCESSING_OBJ::POST_PROCESSING_OBJ(SHADER_OBJ shader_object_argument, unsi
 	glUniform1fv(glGetUniformLocation(this->Post_Processing_Shader_Object.Shader_ID, "screen_shake_effect_blur_kernel"), 9, screen_shake_effect_blur_kernel);
 
 
+}
+
+// define Start_Render function
+void POST_PROCESSING_OBJ::Start_Render()
+{
+	// bind the multi sampled frame buffer object public data member
+	glBindFramebuffer(GL_FRAMEBUFFER, this->multi_sampled_framebuffer_object);
+	// set the clear color buffer to a black (0.0, 0.0, 0.0) with full opacity (alpha value of 1.0)
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	// clear the color buffer
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+// define Finish_Render function
+void POST_PROCESSING_OBJ::Finish_Render()
+{
+	// bind the multi-sampled framebuffer object as our read framebuffer because we want to read all the data that is within this framebuffer
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, this->multi_sampled_framebuffer_object);
+	// bind the regular framebuffer object as our draw framebuffer because we want this framebuffer's data to be the one displayed on the screen-filled quad
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->framebuffer_object);
+	// now blit the two framebuffers together, so read the information stored in the multi-sampled framebuffer and write that information to the regular framebuffer
+	// the extra parameters here relate to the dimensions of each framebuffer with the first 4 parameters being the source framebuffer (multi-sampled framebuffer) dimensions and the next 4 being
+	// the destination framebuffer (regular framebuffer) with the last two being the buffer that we want to store which is the color buffer and the filtering method which we want GL_NEAREST
+	// the zeros represent the beginning coordinates of the framebuffer which we want to be zero, so its zero to the dimensions of the screen
+	glBlitFramebuffer(0, 0, this->Post_Processing_Width, this->Post_Processing_Height, 0, 0, this->Post_Processing_Width, this->Post_Processing_Height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	// unbind the framebuffer to bind both the read and write framebuffers to the default framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+// define the Render_Post_Processing function
+void POST_PROCESSING_OBJ::Render_Post_Processing(float post_processing_time)
+{
+	// activate the post processing shader program
+	this->Post_Processing_Shader_Object.Activate();
+	// set the post_processing_time uniform variable in the fragment shader to the value stored in the argument/parameter post_processing_time
+	this->Post_Processing_Shader_Object.uniform_float("post_processing_time", post_processing_time);
+	// set the post_processing_effect_confuse uniform boolean variable within both the vertex and fragment shaders to the value stored within the Confuse_Effect public data member
+	this->Post_Processing_Shader_Object.uniform_integer("post_processing_effect_confuse", this->Confuse_Effect);
+	// set the post_processing_effect_chaos uniform boolean variable within both the vertex and fragment shaders to the value stored within the Chaos_Effect public data member
+	this->Post_Processing_Shader_Object.uniform_integer("post_processing_effect_chaos", this->Chaos_Effect);
+	// set the post_processing_effect_screen_shake uniform boolean variable within both the vertex and fragment shaders to the value stored within the Screen_Shake_Effect public data member
+	this->Post_Processing_Shader_Object.uniform_integer("post_processing_effect_screen_shake", this->Screen_Shake_Effect);
+	// activate the GL_TEXTURE0 to display the framebuffer object texture on the screen-filled quad
+	glActiveTexture(GL_TEXTURE0);
+	// bind the TEXTURE_2D_OBJ data member that is currently storing the framebuffer color buffer data within it
+	this->Post_Processing_Texture_Object.Bind_Texture();
+	// bind the vertex_array_object private data member
+	glBindVertexArray(this->post_processing_vertex_array_object);
+	// draw the screen-filled quad
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	// unbind the vertex array object
+	glBindVertexArray(0);
+}
+
+// define the vertex_data_initialze private member function
+void POST_PROCESSING_OBJ::vertex_data_initialze()
+{
+	/*
+	 create a vertex buffer object for our screen-filled quad, a VBO is an object that let's us store verticies within something like an array and then
+	 use a vertex array object's attribute pointers to specify how many coordinates to sub-divide in large amount of vertices.
+
+	 for example, a lot of times you will use your first attribute pointer (0) contain positional data, the second (1) for texture coordinates, and the third (2) for normal coordinates
+	 (coordinates that are perpendicular with the surface of an object)
+	*/
+	unsigned int post_processing_vertex_buffer_object;
+
+	// the raw vertex data which will represent our positional as well as texture coordinates
+	// also note that the positional data is already in normalized device coordinate format (coordinates in range of [-1, 1])
+	// texture coordinates will always be in a range of [0-1] with anything above that leading to repeating texture if that is the wrapping method that was selected
+	// all of the positional coordinates will make up a square that is made up of 2 right traingles
+	// notice how these coordiantes use the full range of NDC to take up the whole screen
+	float screen_filled_quad_vertex_data[] =
+	{
+		// positional coordinates		// texture coordiantes
+		// upper right triangle; see how texture coordiantes match up with positional coordiantes
+	   -1.0f, -1.0f,					 0.0f, 0.0f,
+		1.0f,  1.0f,                     1.0f, 1.0f,
+	   -1.0f,  1.0f,                     0.0f, 1.0f,
+
+		// lower right triangle
+	   -1.0f, -1.0f,					0.0f, 0.0f,
+		1.0f, -1.0f,                    1.0f, 0.0f,
+		1.0f, 1.0f,                     1.0f, 1.0f
+	};
+
+	// generate a vertex array object with the OpenGL function glGenVertexArrays and the private data member
+	glGenVertexArrays(1, &this->post_processing_vertex_array_object);
+
+	// generate a vertex buffer object with the prior variable we defined and glGenBuffers
+	glGenBuffers(1, &post_processing_vertex_buffer_object);
+
+	// here we bind the vertex buffer object to configure the vertex buffer object
+	glBindBuffer(GL_ARRAY_BUFFER, post_processing_vertex_buffer_object);
+	// here we configure our VBO by specifying the type of buffer, the size of the VBO, which array to collect the data from, and the drawing method
+	// GL_STATIC_DRAW BASICALLY MEANS THAT THE DATA WE ARE USING WILL BE DEFINED ONLY ONCE AND THEN THIS DATA WILL BE REUSED TO BE DRAWN MULTIPLE TIMES
+	// we use the C++ built-in sizeof function to get the byte size of the sprite_vertex_data array
+	glBufferData(GL_ARRAY_BUFFER, sizeof(screen_filled_quad_vertex_data), screen_filled_quad_vertex_data, GL_STATIC_DRAW);
+
+	// here we also bind the vertex array object private data member for configuration
+	glBindVertexArray(this->post_processing_vertex_array_object);
+
+	// enable our first vertex (and only) array attribute index
+	glEnableVertexAttribArray(0);
+	// configure vertex arribute array 0 with the OpenGL function glVertexArribPointer
+	/*
+	   here we specify which attribute array index we want to configure, how many coordinates / float values to expect, what data type to expect which is float,
+	   if we want the values to be normalized (clamped to range of -1 to 1 for signed values and 0 to 1 for unsigned values) or not in which we don't want,
+	   the stride which is the byte offset per value will always be the amount of values per attribute times the sizeof a singular data type (which
+	   in this case is float), and the offset (if this is the first attribute pointer we want our offset to be this void pointer function at zero)
+	   */
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	// now we unbind our vertex buffor object by calling 0 in glBindBuffer
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	// same concept applies to vertex array objects
+	glBindVertexArray(0);
 }

@@ -29,19 +29,21 @@ uniform int chaos_effect_edge_kernel[9];
 uniform float screen_shake_effect_blur_kernel[9];
 
 // uniform boolean variable to determine if the chaos post processing effect has occured that is sent to this variable within C++ source code
-bool post_processing_effect_chaos;
+uniform bool post_processing_effect_chaos;
 
 // uniform boolean variable to determine if the confuse post processing effect has occured that is sent to this variable within C++ source code
-bool post_processing_effect_confuse;
+uniform bool post_processing_effect_confuse;
 
 // uniform boolean variable to determine if the screen shake post processing effect has occured that is sent to this variable within C++ source code
-bool post_processing_effect_screen_shake;
+uniform bool post_processing_effect_screen_shake;
+
 
 // main function; NOTICE HOW in GLSL main functions are defined as void; aka they dont return any value like a C++ main which returns 0 and is defined as int
 void main()
 {
+
 	// set the inital out vec4 variable's RGBA coordinates with a value of 0
-	framebuffer_color_output = vec4(0.0);
+	framebuffer_color_output = vec4(0.0f);
 	// create a vec3 array with 9 different glm vec3 variables, this will represent all of the sampled rgb values from the framebuffer object texture and texture coordiante offsets
 	vec3 post_processing_effect_samples[9];
 	// if the chaos or shake effect boolean values are true, begin sampling from the texture offsets
@@ -61,7 +63,7 @@ void main()
 	{
 		 // create a for loop that represents the amount of values stored within the chaos_effect_edge_kernel and post_processing_effect_samples (which in this case is 9)
 		 for(int array_values_iterator = 0; array_values_iterator < 9; array_values_iterator++)
-		 {
+		 
 			/*
 				output the chaos effect to the screen by taking the out vec4 framebuffer_color_output variable and use a compound addition operator to take the product of the post_processing_effect_samples
 				and the chaos_effect_edge_kernel with thier respective indexes provided by the array_values_iterator
@@ -70,8 +72,8 @@ void main()
 			*/
 			framebuffer_color_output += vec4(post_processing_effect_samples[array_values_iterator] * chaos_effect_edge_kernel[array_values_iterator], 0.0f);
 			// set the framebuffer_color_output's alpha value to full opacity (a value of 1.0f)
-			framebuffer_color_output.a = 1.0f;
-		 }
+		framebuffer_color_output.a = 1.0f;
+		 
 	}
 
 	// else if confuse uniform boolean statement is true, simply flip the colors of a regular texture's rgb values with an alpha value of 1.0
@@ -85,7 +87,7 @@ void main()
 	{
 		 // create a for loop that represents the amount of values stored within the screen_shake_effect_blur_kernel and post_processing_effect_samples (which in this case is 9)
 		 for(int array_values_iterator = 0; array_values_iterator < 9; array_values_iterator++)	
-		 {
+		 
 			/*
 				output the chaos effect to the screen by taking the out vec4 framebuffer_color_output variable and use a compound addition operator to take the product of the post_processing_effect_samples
 				and the screen_shake_effect_blur_kernel with thier respective indexes provided by the array_values_iterator
@@ -94,8 +96,8 @@ void main()
 			*/
 			framebuffer_color_output += vec4(post_processing_effect_samples[array_values_iterator] * screen_shake_effect_blur_kernel[array_values_iterator], 0.0f);
 			// set the framebuffer_color_output's alpha value to full opacity (a value of 1.0f)
-			framebuffer_color_output.a = 1.0f;
-		 }
+		framebuffer_color_output.a = 1.0f;
+		 
 	}
 
 	// if none of these uniform boolean statments are true, then render the framebuffer object texture on screen as normal with no post processing effects

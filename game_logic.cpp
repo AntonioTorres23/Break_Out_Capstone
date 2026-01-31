@@ -6,8 +6,12 @@
 #include "in_game_obj.h"   // include in_game_obj header file to allow for IN_GAME_OBJ to be created in the game_logic c++ file
 #include "game_ball.h"    // include game_ball header file to allow for GAME_BALL_OBJ to be created in the game_logic c++ file
 #include "generate_particles.h" // include generate_particles header file to allow for GEN_PARTICLES_OBJ to be created in the game_logic c++ file
+#include "post_processing.h" // include post_processing header file to allow for POST_PROCESSING_OBJ to be created in the game_logic c++ file
 
 #include <iostream>
+
+// variable only relevant to this c++ file that will store the time that the screen will shake upon a collision with a solid tile/brick/block
+float time_screen_will_shake = 0.0f;
 
 
 /*
@@ -23,6 +27,8 @@ IN_GAME_OBJ *Player_Object;
 GAME_BALL_OBJ *Game_Ball;
 // create a GEN_PARTICLES_OBJ non-contructed pointer object that will represent the breakout ball
 GEN_PARTICLES_OBJ *Generate_Particles;
+// create a POST_PROCESSING_OBJ non-contructed pointer object that will represent the post processing object
+POST_PROCESSING_OBJ *Post_Processing_Object;
 
 // PROTOTYPE FUNCTION DECLARATIONS for Axis_Aligned_Bounding_Box_Collision_Check function only relevant to this C++ file
 bool Axis_Aligned_Bounding_Box_Collision_Check(IN_GAME_OBJ &first_in_game_obj_argument, IN_GAME_OBJ &second_in_game_obj_argument);
@@ -51,6 +57,7 @@ GAME_OBJ::~GAME_OBJ()
 	delete Player_Object;
 	delete Game_Ball;
 	delete Generate_Particles;
+	delete Post_Processing_Object;
 }
 
 // game initazlier function definition
@@ -59,6 +66,8 @@ void GAME_OBJ::Initalize_Game()
 	// load the shaders provided with the static function shader_load from the resource_manager header file
 	RESOURCE_MANAGER::Shader_Load("Resources/Shaders/sprite_test.vert", "Resources/Shaders/sprite_test.frag", nullptr, "sprite_test");
 	RESOURCE_MANAGER::Shader_Load("Resources/Shaders/particle_shader.vert", "Resources/Shaders/particle_shader.frag", nullptr, "particle_shader");
+	RESOURCE_MANAGER::Shader_Load("Resources/Shaders/post_processing.vert", "Resources/Shaders/post_processing.frag", nullptr, "post_processing_shader");
+	//RESOURCE_MANAGER::Shader_Load("Resources/Shaders/test_fbo.vert", "Resources/Shaders/test_fbo.frag", nullptr, "post_processing_shader");
 	// set a orthographic projection matrix to the dimensions of the screen from our related public data members statically casted to a float value and a near distance of -1 and a far distance of 1 which are Normalized Device Coordinates
 	glm::mat4 sprite_orthographic_projection_matrix = glm::ortho(0.0f, static_cast<float>(this->Width_Of_Screen), static_cast<float>(this->Height_Of_Screen), 0.0f, -1.0f, 0.0f);
 	// get the shader via the mapped_shader name with the resource manager static function Shader_Get and both activate the shader/set the sampler2D uniform variable to GL_ACTIVETEXTURE0
@@ -162,6 +171,9 @@ void GAME_OBJ::Initalize_Game()
 
 	// now with our particle_generator pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the GEN_PARTICLES_OBJ constructor object to the particle_generator pointer object
 	Generate_Particles = new GEN_PARTICLES_OBJ(RESOURCE_MANAGER::Shader_Get("particle_shader"), RESOURCE_MANAGER::Texture_Get("particle_object"), 500);
+
+	// now with our post_processing pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the GEN_PARTICLES_OBJ constructor object to the particle_generator pointer object
+	Post_Processing_Object = new POST_PROCESSING_OBJ(RESOURCE_MANAGER::Shader_Get("post_processing_shader"), this->Width_Of_Screen, this->Height_Of_Screen);
 }
 
 // game update of player movement and ball location function definition
@@ -175,6 +187,17 @@ void GAME_OBJ::Update_Game(float delta_time)
 
 	// update the amount of particles on screen and their life, date the delta time, pointer value of the Ball as our game object, the number of new particles to be created, and an offset of half the ball's radius
 	Generate_Particles->Particles_Update(delta_time, *Game_Ball, 2, glm::vec2(Game_Ball->ball_radius / 2.0f));
+
+	// if time_screen_will_shake is greater than 0 (meaning that the ball has had a collision with a solid tile/block/brick), then the screen is shaking
+	if (time_screen_will_shake > 0.0f)
+	{
+		// use compound subtraction assignment with delta time to reduce the value within time_screen_will_shake
+		// this will reduce the value within time_screen_will_shake until it is less than or equal to 0 (thus not making the screen shake anymore)
+		time_screen_will_shake -= delta_time;
+		// if time_screen_will_shake is less than or equal to 0, then set the Screen_Shake_Effect public boolean data member to false
+		if (time_screen_will_shake <= 0.0f)
+			Post_Processing_Object->Screen_Shake_Effect = false;
+	}
 
 	// if the ball's y positional value is greater than or equal to the screen's dimensions, the player has lost and restart the level
 	if (Game_Ball->game_object_position.y >= this->Height_Of_Screen)
@@ -279,24 +302,30 @@ void GAME_OBJ::Render_Game()
 
 	if (this->Game_State == ACTIVE_GAME)
 	{
-			// DRAW AND RENDER THE BACKGROUND FIRST
-			// Draw and Render our sprite on screen via the function Render_and_Draw_Spirte function
-			Sprite_Render->Render_and_Draw_Spirte(RESOURCE_MANAGER::Texture_Get("game_background"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width_Of_Screen, this->Height_Of_Screen), 0.0f);
+			// first set up the post processing effects with the related public member function
+			Post_Processing_Object->Start_Render();
 
-			// NOW DRAW AND RENDER THE TILES/BLOCKS/BRICKS IN THE GAME_LEVELS member standard lib vector
-			// the Game_Level member is like an index and stores what level we want to load so in this case index 0 stores level one so we will draw and render level one
-			this->Game_Levels[this->Game_Level].Level_Render_and_Draw(*Sprite_Render);
+				// DRAW AND RENDER THE BACKGROUND
+				// Draw and Render our sprite on screen via the function Render_and_Draw_Spirte function
+				Sprite_Render->Render_and_Draw_Spirte(RESOURCE_MANAGER::Texture_Get("game_background"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width_Of_Screen, this->Height_Of_Screen), 0.0f);
 
-			Player_Object->Game_Object_Draw(*Sprite_Render);
+				// NOW DRAW AND RENDER THE TILES/BLOCKS/BRICKS IN THE GAME_LEVELS member standard lib vector
+				// the Game_Level member is like an index and stores what level we want to load so in this case index 0 stores level one so we will draw and render level one
+				this->Game_Levels[this->Game_Level].Level_Render_and_Draw(*Sprite_Render);
 
-			// NOW DRAW AND RENDER PARTICLES BEFORE DRAWING BALL
-			Generate_Particles->Render_And_Draw_Particles();
+				Player_Object->Game_Object_Draw(*Sprite_Render);
 
-			// NOW DRAW AND RENDER THE BALL
+				// NOW DRAW AND RENDER PARTICLES BEFORE DRAWING BALL
+				Generate_Particles->Render_And_Draw_Particles();
+
+				// NOW DRAW AND RENDER THE BALL
 			
-			Game_Ball->Game_Object_Draw(*Sprite_Render);
+				Game_Ball->Game_Object_Draw(*Sprite_Render);
 
-			
+			// finish post processing effects with the related public member function, this sets up the framebuffers and gets the post processing effects ready for rendering
+			Post_Processing_Object->Finish_Render();
+			// render the screen-filled quad with the framebuffer color buffer texture attachment, include glfwGetTime as the post_processing_time
+			Post_Processing_Object->Render_Post_Processing(glfwGetTime());
 	}
 
 
@@ -349,12 +378,20 @@ void GAME_OBJ::Axis_Aligned_Bounding_Box_Collisions()
 			if (std::get<0>(ball_and_brick_collision_tuple))
 			{
 				// if the tile/brick/block isn't already destroyed
-				if (!brick_game_object_within_game_level_iterator.game_object_destroyed)
+				//if (!brick_game_object_within_game_level_iterator.game_object_destroyed)
 					
-					// if tile/brick/block isn't solid, destroy it
+				// if tile/brick/block isn't solid, destroy it
 				if (!brick_game_object_within_game_level_iterator.game_object_solid)
-					
+
 					brick_game_object_within_game_level_iterator.game_object_destroyed = true;
+				// if tile/brick/brick is solid make screen shake	
+				else
+				{
+					// set the time_screen_will_shake variable to a value of 0.05; this will shake the screen for 0.05 seconds once a collision has occured within a solid tile/brick/block
+					time_screen_will_shake = 0.05f;
+					// set the Screen_Shake_Effect boolean public data member to true
+					Post_Processing_Object->Screen_Shake_Effect = true;
+				}
 
 				// grab the 2nd value in the ball_and_brick_collision_tuple which is the Ball Bounce Direction enumeration value from the Ball_Bounce_Direction_GLM_Vector within the Axis_Aligned_Bounding_Box_Collision_Check return value
 				// again we use std::get and index at position 1 (second value in tuple) 

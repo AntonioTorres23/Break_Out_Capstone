@@ -53,6 +53,8 @@
     <None Include="post_processing.vert" />
     <None Include="Resources\Shaders\sprite_test.frag" />
     <None Include="Resources\Shaders\sprite_test.vert" />
+    <None Include="test_fbo.frag" />
+    <None Include="test_fbo.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Textures\dog_smile2.jpg" />

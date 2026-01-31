@@ -35,8 +35,8 @@ public: // all of our public data/function members
 	// public void function that stores all the framebuffer object data gathered after rendering the game into a texture object
 	void Finish_Render();
 	
-	// public void function that renders the framebuffer object texture onto a screen-filled quad; takes delta time as an argument
-	void Render_Post_Processing(float delta_time);
+	// public void function that renders the framebuffer object texture onto a screen-filled quad; takes post processing time as an argument
+	void Render_Post_Processing(float post_processing_time);
 
 private: // all of our private data/function members
 
@@ -51,7 +51,7 @@ private: // all of our private data/function members
 	// due to render buffer object's data being in a native format and not having to be converted into a texture format, it makes them much faster to write to
 	unsigned int renderbuffer_object;
 	// private data member that stores the screen-filled quad's vertex array object
-	unsigned int vertex_array_object;
+	unsigned int post_processing_vertex_array_object;
 
 	// private void function that will begin initializing the vertex data for the screen-filled quad that will display the framebuffer object texture
 	void vertex_data_initialze();

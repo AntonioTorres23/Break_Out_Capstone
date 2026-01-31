@@ -106,7 +106,15 @@
     <None Include="post_processing.vert">
       <Filter>source_code\Shaders</Filter>
     </None>
-    <None Include="post_processing.frag" />
+    <None Include="post_processing.frag">
+      <Filter>source_code\Shaders</Filter>
+    </None>
+    <None Include="test_fbo.vert">
+      <Filter>source_code\Shaders</Filter>
+    </None>
+    <None Include="test_fbo.frag">
+      <Filter>source_code\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Textures\dog_smile2.jpg">
