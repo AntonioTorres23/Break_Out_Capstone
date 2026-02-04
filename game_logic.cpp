@@ -10,6 +10,8 @@
 
 #include <iostream>
 
+#include <filesystem>
+
 // variable only relevant to this c++ file that will store the time that the screen will shake upon a collision with a solid tile/brick/block
 float time_screen_will_shake = 0.0f;
 
@@ -64,9 +66,13 @@ GAME_OBJ::~GAME_OBJ()
 void GAME_OBJ::Initalize_Game()
 {
 	// load the shaders provided with the static function shader_load from the resource_manager header file
+	RESOURCE_MANAGER::Shader_Load("Resources/Shaders/post_processing.vert", "Resources/Shaders/post_processing.frag", nullptr, "post_processing_shader");
 	RESOURCE_MANAGER::Shader_Load("Resources/Shaders/sprite_test.vert", "Resources/Shaders/sprite_test.frag", nullptr, "sprite_test");
 	RESOURCE_MANAGER::Shader_Load("Resources/Shaders/particle_shader.vert", "Resources/Shaders/particle_shader.frag", nullptr, "particle_shader");
-	RESOURCE_MANAGER::Shader_Load("Resources/Shaders/post_processing.vert", "Resources/Shaders/post_processing.frag", nullptr, "post_processing_shader");
+	//RESOURCE_MANAGER::Shader_Load("Resources/Shaders/post_processing.vert", "Resources/Shaders/post_processing.frag", nullptr, "post_processing_shader");
+
+	std::cout << RESOURCE_MANAGER::Shader_Get("post_processing_shader").Shader_ID << std::endl;
+	
 	//RESOURCE_MANAGER::Shader_Load("Resources/Shaders/test_fbo.vert", "Resources/Shaders/test_fbo.frag", nullptr, "post_processing_shader");
 	// set a orthographic projection matrix to the dimensions of the screen from our related public data members statically casted to a float value and a near distance of -1 and a far distance of 1 which are Normalized Device Coordinates
 	glm::mat4 sprite_orthographic_projection_matrix = glm::ortho(0.0f, static_cast<float>(this->Width_Of_Screen), static_cast<float>(this->Height_Of_Screen), 0.0f, -1.0f, 0.0f);
@@ -174,6 +180,7 @@ void GAME_OBJ::Initalize_Game()
 
 	// now with our post_processing pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the GEN_PARTICLES_OBJ constructor object to the particle_generator pointer object
 	Post_Processing_Object = new POST_PROCESSING_OBJ(RESOURCE_MANAGER::Shader_Get("post_processing_shader"), this->Width_Of_Screen, this->Height_Of_Screen);
+
 }
 
 // game update of player movement and ball location function definition

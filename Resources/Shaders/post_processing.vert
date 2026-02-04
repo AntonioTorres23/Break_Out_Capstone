@@ -8,16 +8,16 @@ layout (location = 0) in vec4 framebuffer_quad_data;
 out vec2 framebuffer_screen_quad_texture_coordiantes;
 
 // uniform boolean variable to determine if the chaos post processing effect has occured that is sent to this variable within C++ source code
-bool post_processing_effect_chaos;
+uniform bool post_processing_effect_chaos;
 
 // uniform boolean variable to determine if the confuse post processing effect has occured that is sent to this variable within C++ source code
-bool post_processing_effect_confuse;
+uniform bool post_processing_effect_confuse;
 
 // uniform boolean variable to determine if the screen shake post processing effect has occured that is sent to this variable within C++ source code
-bool post_processing_effect_screen_shake;
+uniform bool post_processing_effect_screen_shake;
 
 // uniform float variable to indicate the time of the post processing that is sent to this variable within C++ source code
-float post_processing_time;
+uniform float post_processing_time;
 
 // main function; NOTICE HOW in GLSL main functions are defined as void; aka they dont return any value like a C++ main which returns 0 and is defined as int
 void main()

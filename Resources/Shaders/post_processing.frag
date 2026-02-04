@@ -29,13 +29,13 @@ uniform int chaos_effect_edge_kernel[9];
 uniform float screen_shake_effect_blur_kernel[9];
 
 // uniform boolean variable to determine if the chaos post processing effect has occured that is sent to this variable within C++ source code
-bool post_processing_effect_chaos;
+uniform bool post_processing_effect_chaos;
 
 // uniform boolean variable to determine if the confuse post processing effect has occured that is sent to this variable within C++ source code
-bool post_processing_effect_confuse;
+uniform bool post_processing_effect_confuse;
 
 // uniform boolean variable to determine if the screen shake post processing effect has occured that is sent to this variable within C++ source code
-bool post_processing_effect_screen_shake;
+uniform bool post_processing_effect_screen_shake;
 
 // main function; NOTICE HOW in GLSL main functions are defined as void; aka they dont return any value like a C++ main which returns 0 and is defined as int
 void main()

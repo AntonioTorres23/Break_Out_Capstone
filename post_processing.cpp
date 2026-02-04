@@ -129,9 +129,9 @@ void POST_PROCESSING_OBJ::Render_Post_Processing(float post_processing_time)
 	// set the post_processing_time uniform variable in the fragment shader to the value stored in the argument/parameter post_processing_time
 	this->Post_Processing_Shader_Object.uniform_float("post_processing_time", post_processing_time);
 	// set the post_processing_effect_confuse uniform boolean variable within both the vertex and fragment shaders to the value stored within the Confuse_Effect public data member
-	this->Post_Processing_Shader_Object.uniform_integer("post_processing_effect_confuse", this->Confuse_Effect);
+	this->Post_Processing_Shader_Object.uniform_integer("post_processing_effect_confuse", this->Confuse_Effect, true);
 	// set the post_processing_effect_chaos uniform boolean variable within both the vertex and fragment shaders to the value stored within the Chaos_Effect public data member
-	this->Post_Processing_Shader_Object.uniform_integer("post_processing_effect_chaos", this->Chaos_Effect);
+	this->Post_Processing_Shader_Object.uniform_integer("post_processing_effect_chaos", this->Chaos_Effect, true);
 	// set the post_processing_effect_screen_shake uniform boolean variable within both the vertex and fragment shaders to the value stored within the Screen_Shake_Effect public data member
 	this->Post_Processing_Shader_Object.uniform_integer("post_processing_effect_screen_shake", this->Screen_Shake_Effect);
 	// activate the GL_TEXTURE0 to display the framebuffer object texture on the screen-filled quad
