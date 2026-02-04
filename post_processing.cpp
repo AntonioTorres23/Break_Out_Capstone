@@ -140,9 +140,6 @@ void POST_PROCESSING_OBJ::Render_Post_Processing(float post_processing_time)
 	this->Post_Processing_Texture_Object.Bind_Texture();
 	// bind the vertex_array_object private data member
 	glBindVertexArray(this->post_processing_vertex_array_object);
-
-	glDisable(GL_DEPTH_TEST);
-	
 	// draw the screen-filled quad
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	// unbind the vertex array object
