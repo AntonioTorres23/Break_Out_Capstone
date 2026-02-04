@@ -79,12 +79,17 @@ SHADER_OBJ RESOURCE_MANAGER::Shader_Load_From_Ext_File(const char *vertexShaderF
 	std::string vertexShaderString;
 	std::string fragmentShaderString;
 	std::string geometryShaderString;
+
+	std::ifstream vertexShaderIFSTREAM;
+	std::ifstream fragmentShaderIFSTREAM;
+	vertexShaderIFSTREAM.exceptions(std::ifstream::failbit | std::ifstream::failbit);
 	// try statment to attempt opening and reading the source code from the shader file paths
 	try
 	{
+
+		vertexShaderIFSTREAM.open(vertexShaderFilePath);
+		fragmentShaderIFSTREAM.open(fragmentShaderFilePath);
 		// try to open the shader files with ifstream
-		std::ifstream vertexShaderIFSTREAM(vertexShaderFilePath);
-		std::ifstream fragmentShaderIFSTREAM(fragmentShaderFilePath);
 		// create some string streams
 		std::stringstream vertexShaderSTRINGSTREAM, fragmentShaderSTRINGSTREAM;
 		// use the string streams and try to read the ifstream buffers into the string streams
@@ -101,22 +106,34 @@ SHADER_OBJ RESOURCE_MANAGER::Shader_Load_From_Ext_File(const char *vertexShaderF
 		if (geometryShaderFilePath != nullptr)
 		{
 			// try to open the geometry shader file with ifstream
-			std::ifstream geometryShaderIFSTREAM(geometryShaderFilePath);
-			// create a geometry shader string sream
-			std::stringstream geometryShaderSTRINGSTREAM; 
-			// use the string stream and try to read the ifsream buffer into the string stream
-			// you use the rdbuf method function to achieve this
-			geometryShaderSTRINGSTREAM << geometryShaderIFSTREAM.rdbuf();
-			// now we close the IFSTREAM geometry shader variable
-			geometryShaderIFSTREAM.close();
-			// convert string stream into a regular string and store this within the geometry shader string variable created earlier in this function
-			geometryShaderString = geometryShaderSTRINGSTREAM.str();
+			std::ifstream geometryShaderIFSTREAM;
+			
+			geometryShaderIFSTREAM.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+			try
+			{
+				geometryShaderIFSTREAM.open(geometryShaderFilePath);
+
+				// create a geometry shader string sream
+				std::stringstream geometryShaderSTRINGSTREAM;
+				// use the string stream and try to read the ifsream buffer into the string stream
+				// you use the rdbuf method function to achieve this
+				geometryShaderSTRINGSTREAM << geometryShaderIFSTREAM.rdbuf();
+				// now we close the IFSTREAM geometry shader variable
+				geometryShaderIFSTREAM.close();
+				// convert string stream into a regular string and store this within the geometry shader string variable created earlier in this function
+				geometryShaderString = geometryShaderSTRINGSTREAM.str();
+			}
+			catch (std::ifstream::failure& excep)
+			{
+				std::cout << "ERROR::SHADER_FILES::FAILED_TO_READ_SHADER_FILE(S)" << excep.what() << std::endl;
+			}
 		}
 	}
 	// if there is an error, catch it here and thrown a custom exception statment that we send to default output with c out
-	catch (std::exception load_shader_file_error)
+	catch (std::ifstream::failure &excep)
 	{
-		std::cout << "ERROR::SHADER_FILES::FAILED_TO_READ_SHADER_FILE(S)" << std::endl;
+		std::cout << "ERROR::SHADER_FILES::FAILED_TO_READ_SHADER_FILE(S)" << excep.what() << std::endl;
 	}
 	// now convert the string variables to a c_string style array and store them in new const char pointer variablse
 	const char *vertexShaderCstringSourceCode   = vertexShaderString.c_str();
