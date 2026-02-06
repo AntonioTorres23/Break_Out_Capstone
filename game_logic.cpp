@@ -180,7 +180,6 @@ void GAME_OBJ::Initalize_Game()
 
 	// now with our post_processing pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the GEN_PARTICLES_OBJ constructor object to the particle_generator pointer object
 	Post_Processing_Object = new POST_PROCESSING_OBJ(RESOURCE_MANAGER::Shader_Get("post_processing_shader"), this->Width_Of_Screen, this->Height_Of_Screen);
-
 }
 
 // game update of player movement and ball location function definition

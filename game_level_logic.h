@@ -12,6 +12,9 @@
 // include the render_sprite header file to access the RENDER_SPRITE_OBJ class 
 #include "render_sprite.h"
 
+// include power_up header file to access the POST_PROCESSING_OBJ class
+#include "power_up.h"
+
 // include resource_manager header file to access the RESOURCE_MANAGER class specificly its static functions
 #include "resource_manager.h"
 
@@ -21,6 +24,8 @@ class GAME_LEVEL_OBJ
 public: // all public data/function members
 	// a standard library vector data member that stores all of the bricks in our game level as a IN_GAME_OBJ
 	std::vector<IN_GAME_OBJ> game_object_bricks;
+	// a standard library vector data member that stores all of the powerups in our game level as a POWER_UP_OBJ
+	std::vector<POWER_UP_OBJ> power_up_objects;
 	// empty constructor of the GAME_LEVEL_OBJ class
 	GAME_LEVEL_OBJ()
 	{
@@ -33,6 +38,12 @@ public: // all public data/function members
 	// void member function that will render and draw a level
 	void Level_Render_and_Draw(RENDER_SPRITE_OBJ& render_sprite_argument);
 	
+	// void member function that will generate a random power up
+	void Power_Up_Generate(IN_GAME_OBJ& brick_within_game);
+
+	// void member function that will update the power ups in game
+	void Power_Up_Update(float delta_time);
+
 	// boolean member function that checks if the level is completed and all non-solid tiles become destroyed
 	bool Level_Complete();
 

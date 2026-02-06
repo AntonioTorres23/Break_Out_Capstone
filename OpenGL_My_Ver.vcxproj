@@ -25,6 +25,7 @@
     <ClInclude Include="generate_particles.h" />
     <ClInclude Include="in_game_obj.h" />
     <ClInclude Include="post_processing.h" />
+    <ClInclude Include="power_up.h" />
     <ClInclude Include="process_shader.h" />
     <ClInclude Include="process_texture.h" />
     <ClInclude Include="render_sprite.h" />
