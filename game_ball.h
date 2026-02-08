@@ -21,6 +21,12 @@ public: // all (newly defined) public data/function members that are within GAME
 	// boolean data member that checks if the ball object is currently stuck or not to the player
 	bool ball_stuck;
 
+	// boolean data member that checks if the power up that makes the ball stuck back to the player has been activated
+	bool ball_restuck; 
+
+	// boolean data member that checks if the power up that makes the ball pass through solid tiles/blocks/bricks has been activated
+	bool ball_pass_through_solid;
+
 	// constructor of GAME_BALL_OBJ with no parameters/arguments
 	GAME_BALL_OBJ();
 

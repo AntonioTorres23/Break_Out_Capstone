@@ -8,9 +8,9 @@
 #include "generate_particles.h" // include generate_particles header file to allow for GEN_PARTICLES_OBJ to be created in the game_logic c++ file
 #include "post_processing.h" // include post_processing header file to allow for POST_PROCESSING_OBJ to be created in the game_logic c++ file
 
-#include <iostream>
+#include <algorithm> // include this standard library to use the remove_if function within the Power_Up_Update public member function
 
-#include <filesystem>
+#include <iostream>
 
 // variable only relevant to this c++ file that will store the time that the screen will shake upon a collision with a solid tile/brick/block
 float time_screen_will_shake = 0.0f;
@@ -40,6 +40,15 @@ BallCollision Axis_Aligned_Bounding_Box_Collision_Check(GAME_BALL_OBJ &game_ball
 
 // PROTOTYPE FUNCTION DECLARATION for Ball_Bounce_Direction_GLM_Vector function only relevant to this C++ file
 BallBounceDirection Ball_Bounce_Direction_GLM_Vector(glm::vec2 glm_2_value_vector_argument);
+
+// PROTOTYPE FUNCTION DECLARATION for If_Power_Up_Should_Spawn only relevant to this C++ file 
+bool If_Power_Up_Should_Spawn(unsigned int chance_power_up_can_spawn);
+
+// PROTOTYPE FUNCTION DECLARATION for Power_Up_Activate only relevant to this C++ file 
+void Power_Up_Activate(POWER_UP_OBJ& power_up_object_argument);
+
+// PROTOTYPE FUNCTION DECLARATION for Other_Power_Up_Of_Same_Type_Also_Active only relevant to this C++ file 
+bool Other_Power_Up_Of_Same_Type_Also_Active(std::vector<POWER_UP_OBJ>& power_up_objects_argument, std::string power_up_type_argument);
 
 // use the game object contructor that takes as arguments the width and height that the game window should be
 // we also use a contructor member initalizer list with the Game_State ENUM, Key_Pressed_Buffer, and Height and Width of the screen data members. We set the Height and Width of the screen to their respective constructor arguments
@@ -130,6 +139,14 @@ void GAME_OBJ::Initalize_Game()
 	RESOURCE_MANAGER::Texture_Load("Resources/Textures/block_solid.png", false, "solid_block");
 	RESOURCE_MANAGER::Texture_Load("Resources/Textures/paddle.png", true, "player_object");
 	RESOURCE_MANAGER::Texture_Load("Resources/Textures/particle.png", true, "particle_object");
+	RESOURCE_MANAGER::Texture_Load("Resources/Textures/powerup_speed.png", true, "speed_power_up");
+	RESOURCE_MANAGER::Texture_Load("Resources/Textures/powerup_sticky.png", true, "sticky_power_up");
+	RESOURCE_MANAGER::Texture_Load("Resources/Textures/powerup_increase.png", true, "increase_power_up");
+	RESOURCE_MANAGER::Texture_Load("Resources/Textures/powerup_confuse.png", true, "confuse_power_up");
+	RESOURCE_MANAGER::Texture_Load("Resources/Textures/powerup_chaos.png", true, "chaos_power_up");
+	RESOURCE_MANAGER::Texture_Load("Resources/Textures/powerup_confuse.png", true, "confuse_power_up");
+	RESOURCE_MANAGER::Texture_Load("Resources/Textures/powerup_passthrough.png", true, "passthrough_power_up");
+
 	// create the GAME_LEVEL_OBJ(s) and load the level(s) via the corresponding member function Level_Load method within a GAME_LVL_OBJ
 	GAME_LEVEL_OBJ level_one; 
 	// notice how we half our height of window/screen dimensions for our corresponding Level_Load parameter/argument because we want the tiles/blocks/bricks to be further up towards the top of the screen (at least I think that's why)
@@ -193,6 +210,9 @@ void GAME_OBJ::Update_Game(float delta_time)
 
 	// update the amount of particles on screen and their life, date the delta time, pointer value of the Ball as our game object, the number of new particles to be created, and an offset of half the ball's radius
 	Generate_Particles->Particles_Update(delta_time, *Game_Ball, 2, glm::vec2(Game_Ball->ball_radius / 2.0f));
+
+	// update all of the power up objects that are within the game
+	this->Power_Up_Update(delta_time);
 
 	// if time_screen_will_shake is greater than 0 (meaning that the ball has had a collision with a solid tile/block/brick), then the screen is shaking
 	if (time_screen_will_shake > 0.0f)
@@ -319,6 +339,18 @@ void GAME_OBJ::Render_Game()
 				// the Game_Level member is like an index and stores what level we want to load so in this case index 0 stores level one so we will draw and render level one
 				this->Game_Levels[this->Game_Level].Level_Render_and_Draw(*Sprite_Render);
 
+				// within all of the power ups stored in the Power_Up_Objects standard library vector data member
+				// render all the non destroyed power ups on screen
+				
+				//  
+				// I believe that since we are not using a predefined standerd lib vector and the iterator is using adresses locations, we don't need to use a ; since we are not initalizing anything
+				// but just parsing through something that is already pre-existing
+				for (POWER_UP_OBJ& power_up_object_within_game_iterator : this->Power_Up_Objects)
+				{
+					if (!power_up_object_within_game_iterator.game_object_destroyed)
+						power_up_object_within_game_iterator.Game_Object_Draw(*Sprite_Render);
+				}
+
 				Player_Object->Game_Object_Draw(*Sprite_Render);
 
 				// NOW DRAW AND RENDER PARTICLES BEFORE DRAWING BALL
@@ -388,8 +420,13 @@ void GAME_OBJ::Axis_Aligned_Bounding_Box_Collisions()
 					
 				// if tile/brick/block isn't solid, destroy it
 				if (!brick_game_object_within_game_level_iterator.game_object_solid)
-
+				{
 					brick_game_object_within_game_level_iterator.game_object_destroyed = true;
+					// also, attempt to spawn a power up with the brick_game_object_within_game_level_iterator as the argument/parameter
+					// this basically means after a brick is destroyed, begin the process of spawning a power up
+					this->Power_Up_Spawn(brick_game_object_within_game_level_iterator);
+				}
+
 				// if tile/brick/brick is solid make screen shake	
 				else
 				{
@@ -404,64 +441,96 @@ void GAME_OBJ::Axis_Aligned_Bounding_Box_Collisions()
 				BallBounceDirection ball_bounce_direction = std::get<1>(ball_and_brick_collision_tuple);
 				// as well as get the ball collision difference 2-value GLM vector which is at position 2 within the tuple index using the same standard lib function
 				glm::vec2 ball_collision_difference_vector = std::get<2>(ball_and_brick_collision_tuple);
+				
+				// if the pass through power up is not activated and the box is not solid, then start calculating where the ball will bounce off
+				if (!(Game_Ball->ball_pass_through_solid && !brick_game_object_within_game_level_iterator.game_object_solid))
+				{ 
+				
+					// check if there is a horizontal collision; meaning a if statment which if the ball_bounce_direction contains an enumeration value of DIRECTION_LEFT OR DIRECTION_RIGHT
+					if (ball_bounce_direction == DIRECTION_LEFT || ball_bounce_direction == DIRECTION_RIGHT)
+					{
+						// reverse (negate) the ball velocity's x value therfore making it bounce off the tile/block/brick
+						Game_Ball->game_object_physics_velocity.x = -Game_Ball->game_object_physics_velocity.x;
 
-				// check if there is a horizontal collision; meaning a if statment which if the ball_bounce_direction contains an enumeration value of DIRECTION_LEFT OR DIRECTION_RIGHT
-				if (ball_bounce_direction == DIRECTION_LEFT || ball_bounce_direction == DIRECTION_RIGHT)
-				{
-					// reverse (negate) the ball velocity's x value therfore making it bounce off the tile/block/brick
-					Game_Ball->game_object_physics_velocity.x = -Game_Ball->game_object_physics_velocity.x;
+						// move the ball to just before it enters the brick using the ball_collision_difference_vector to make it look like the ball "actually bounced" off the tile/block/brick (we call this the penertration value)
+						// we do this by taking the ball's raidus value and subtracting it by the absolute value of the ball_collision_difference_vector's x value
+						// the standard lib function std::abs gets the absolute value of a variable or int, float, double, etc. data type
+						// all an absolute value is the distance of a number from 0, for example |4| = 4 because its 4 to the right from zero, and |-6| = 6 because its 6 to the left from zero
+						// basically, an absolute value makes a negative number positive and leaves a positive number uneffected
 
-					// move the ball to just before it enters the brick using the ball_collision_difference_vector to make it look like the ball "actually bounced" off the tile/block/brick (we call this the penertration value)
-					// we do this by taking the ball's raidus value and subtracting it by the absolute value of the ball_collision_difference_vector's x value
-					// the standard lib function std::abs gets the absolute value of a variable or int, float, double, etc. data type
-					// all an absolute value is the distance of a number from 0, for example |4| = 4 because its 4 to the right from zero, and |-6| = 6 because its 6 to the left from zero
-					// basically, an absolute value makes a negative number positive and leaves a positive number uneffected
-
-					float ball_penetration_value = Game_Ball->ball_radius - std::abs(ball_collision_difference_vector.x);
+						float ball_penetration_value = Game_Ball->ball_radius - std::abs(ball_collision_difference_vector.x);
 					
-					// if the ball_bounce_direction enumeration value is equal to DIRECTION_LEFT (hit the left of the AABB), then we use addition compound assignment on the Ball position's x value with the ball penetration value
-					// (move the ball to the right)
-					if (ball_bounce_direction == DIRECTION_LEFT)
-						Game_Ball->game_object_position.x += ball_penetration_value;
-					// if not (ball_bounce direction hit the right of the AABB), then use the same logic as the prior if statment, but instead use subtraction compound assignment
-					// (move the ball to the left)
-					else
-						Game_Ball->game_object_position.x -= ball_penetration_value;
-				}
-				// if there is no horizontal collision, then it is a vertical collision
-				else
-				{
-					// same concept applies as the vertical collisions, but this time we use y values
-
-					// reverse (negate) the ball velocity's y value therfore making it bounce off the tile/block/brick
-					Game_Ball->game_object_physics_velocity.y = -Game_Ball->game_object_physics_velocity.y;
-
-					// move the ball to just before it enters the brick using the ball_collision_difference_vector to make it look like the ball "actually bounced" off the tile/block/brick (we call this the penertration value)
-					// we do this by taking the ball's raidus value and subtracting it by the absolute value of the ball_collision_difference_vector's y value
-
-					float ball_penetration_value = Game_Ball->ball_radius - std::abs(ball_collision_difference_vector.y);
-
-					// if the ball_bounce_direction is equal to DIRECTION_UP (hit the top of the AABB), then we use subtraction compound assignment on the Ball position's y value with the ball penetration value
-					// I ACTUALLY DON'T KNOW WHY WE DO SUBTRACTION COMPOUND ASSIGNMENT TO MOVE UP; WHEN TO MOVE UP ON A Y AXIS YOU NEED POSITIVE COORDIANTES; BUT MY BEST GUESS IS THAT WHEN YOU USE THE ABSOLUTE VALUE
-					// OF THE ball_collision_difference_vector, IF THE VALUE IS A NEGATIVE NUMBER, WHEN APPLIED WITH SUBTRACTION COMPOUND ASSIGNMENT WITH THE BALL POSITION'S Y VALUE IT MAKES A DOUBLE NEGATIVE WITH THE
-					// SUBTRACTION COMPOUND ASSIGNMENT OPERATOR THEREFORE MAKING IT POSSITIVE? (JUST A GUESS)
-
-					if (ball_bounce_direction == DIRECTION_UP)
-						Game_Ball->game_object_position.y -= ball_penetration_value;
-
-					// else statment means there is no other directions except for DIRECTION_DOWN; meaning the ball hit the bottom of the AABB, so use addition compound assignment on the Ball position's y value with the ball penetration value
-					// I ACTUALLY DON'T KNOW WHY WE DO ADDITION COMPOUND ASSIGNMENT TO MOVE DOWN; WHEN TO MOVE DOWN ON A Y AXIS YOU NEED NEGATIVE COORDIANTES; BUT MY BEST GUESS IS THAT WHEN YOU USE THE ABSOLUTE VALUE
-					// OF THE ball_collision_difference_vector, IF THE VALUE IS A NEGATIVE NUMBER, WHEN APPLIED WITH ADDITION COMPOUND ASSIGNMENT WITH THE BALL POSITION'S Y VALUE IT JUST LEAVES THE NEGATIVE VALUE AS NORMAL WITH THE
-					// ADDITION COMPOUND ASSIGNMENT OPERATOR THEREFORE MAKING IT NEGATIVE? (JUST A GUESS)
+						// if the ball_bounce_direction enumeration value is equal to DIRECTION_LEFT (hit the left of the AABB), then we use addition compound assignment on the Ball position's x value with the ball penetration value
+						// (move the ball to the right)
+						if (ball_bounce_direction == DIRECTION_LEFT)
+							Game_Ball->game_object_position.x += ball_penetration_value;
+						// if not (ball_bounce direction hit the right of the AABB), then use the same logic as the prior if statment, but instead use subtraction compound assignment
+						// (move the ball to the left)
+						else
+							Game_Ball->game_object_position.x -= ball_penetration_value;
+					}
+					// if there is no horizontal collision, then it is a vertical collision
 					else
 					{
-						Game_Ball->game_object_position.y += ball_penetration_value;
+						// same concept applies as the vertical collisions, but this time we use y values
+
+						// reverse (negate) the ball velocity's y value therfore making it bounce off the tile/block/brick
+						Game_Ball->game_object_physics_velocity.y = -Game_Ball->game_object_physics_velocity.y;
+
+						// move the ball to just before it enters the brick using the ball_collision_difference_vector to make it look like the ball "actually bounced" off the tile/block/brick (we call this the penertration value)
+						// we do this by taking the ball's raidus value and subtracting it by the absolute value of the ball_collision_difference_vector's y value
+
+						float ball_penetration_value = Game_Ball->ball_radius - std::abs(ball_collision_difference_vector.y);
+
+						// if the ball_bounce_direction is equal to DIRECTION_UP (hit the top of the AABB), then we use subtraction compound assignment on the Ball position's y value with the ball penetration value
+						// I ACTUALLY DON'T KNOW WHY WE DO SUBTRACTION COMPOUND ASSIGNMENT TO MOVE UP; WHEN TO MOVE UP ON A Y AXIS YOU NEED POSITIVE COORDIANTES; BUT MY BEST GUESS IS THAT WHEN YOU USE THE ABSOLUTE VALUE
+						// OF THE ball_collision_difference_vector, IF THE VALUE IS A NEGATIVE NUMBER, WHEN APPLIED WITH SUBTRACTION COMPOUND ASSIGNMENT WITH THE BALL POSITION'S Y VALUE IT MAKES A DOUBLE NEGATIVE WITH THE
+						// SUBTRACTION COMPOUND ASSIGNMENT OPERATOR THEREFORE MAKING IT POSSITIVE? (JUST A GUESS)
+
+						if (ball_bounce_direction == DIRECTION_UP)
+							Game_Ball->game_object_position.y -= ball_penetration_value;
+
+						// else statment means there is no other directions except for DIRECTION_DOWN; meaning the ball hit the bottom of the AABB, so use addition compound assignment on the Ball position's y value with the ball penetration value
+						// I ACTUALLY DON'T KNOW WHY WE DO ADDITION COMPOUND ASSIGNMENT TO MOVE DOWN; WHEN TO MOVE DOWN ON A Y AXIS YOU NEED NEGATIVE COORDIANTES; BUT MY BEST GUESS IS THAT WHEN YOU USE THE ABSOLUTE VALUE
+						// OF THE ball_collision_difference_vector, IF THE VALUE IS A NEGATIVE NUMBER, WHEN APPLIED WITH ADDITION COMPOUND ASSIGNMENT WITH THE BALL POSITION'S Y VALUE IT JUST LEAVES THE NEGATIVE VALUE AS NORMAL WITH THE
+						// ADDITION COMPOUND ASSIGNMENT OPERATOR THEREFORE MAKING IT NEGATIVE? (JUST A GUESS)
+						else
+						{
+							Game_Ball->game_object_position.y += ball_penetration_value;
+						}
 					}
 
 				}
 
 			}
 
+		}
+
+	}
+	
+	// check if a power up has collided with the player by first creating an iterator of all the Power_Up_Objects in the game currently
+	//  
+	// I believe that since we are not using a predefined standerd lib vector and the iterator is using adresses locations, we don't need to use a ; since we are not initalizing anything
+	// but just parsing through something that is already pre-existing
+	for (POWER_UP_OBJ &power_up_object_within_game_iterator : this->Power_Up_Objects)
+	{
+		// if the power up object is not destroyed, check for power up collisions
+		if (!power_up_object_within_game_iterator.game_object_destroyed)
+		{
+			// if powerup has reached or passed the bottom of the screen, then destroy the power up
+			if (power_up_object_within_game_iterator.game_object_position.y >= this->Height_Of_Screen)
+				power_up_object_within_game_iterator.game_object_destroyed = true;
+
+			// if a collision has occured with the player and the power up object, then the power up has been activated, remember to make the player have a value pointer to get the actual Player_Object and not just the address
+			if (Axis_Aligned_Bounding_Box_Collision_Check(*Player_Object, power_up_object_within_game_iterator))
+			{
+				// activate the power up with the related local C++ function
+				Power_Up_Activate(power_up_object_within_game_iterator);
+				// destroy the power up object
+				power_up_object_within_game_iterator.game_object_destroyed = true;
+				// set the state of the power up as activated
+				power_up_object_within_game_iterator.Power_Up_Activated = true;
+			}
 		}
 	}
 
@@ -498,6 +567,10 @@ void GAME_OBJ::Axis_Aligned_Bounding_Box_Collisions()
 		// the length of the original_velocity_values 2-value GLM vector
 		Game_Ball->game_object_physics_velocity = glm::normalize(Game_Ball->game_object_physics_velocity) * glm::length(original_velocity_values);
 
+
+		// if sticky ball powerup is active, stick the ball to the player when the new game ball velocity vectors are calculated and assign the current value in ball_restuck to the value within ball_stuck
+		// if the ball restuck data member is false then the ball stuck data member will also remain false
+		Game_Ball->ball_stuck = Game_Ball->ball_restuck;
 	}
 }
 
@@ -636,4 +709,182 @@ BallBounceDirection Ball_Bounce_Direction_GLM_Vector(glm::vec2 glm_2_value_vecto
 
 	// after the for loop is finished, return the BallBounceDirection that best matches where the ball direction is upon collision with the direction_enumeration_that_best_matches_ball_direction_upon_collision_with_aabb as the index value
 	return (BallBounceDirection)direction_enumeration_that_best_matches_ball_direction_upon_collision_with_aabb;
+}
+
+// define Power_Up_Activate function that is only local to this C++ file, takes an address of a POWER_UP_OBJ as its argument/parameter
+void Power_Up_Activate(POWER_UP_OBJ& power_up_object_argument)
+{
+	// if power up object's type is equal to speed_power_up use multiplication assignment to multiply the ball's velocity by 1.2
+	if (power_up_object_argument.Power_Up_Type == "speed_power_up")
+	{
+		Game_Ball->game_object_physics_velocity *= 1.2;
+	}
+	// else if power up object's type is equal to sticky_power_up, then reattach the ball to the player and make the color of the player a purple like color
+	else if (power_up_object_argument.Power_Up_Type == "sticky_power_up")
+	{
+		Game_Ball->ball_restuck = true;
+		Player_Object->game_object_color = glm::vec3(1.0f, 0.5f, 1.0f);
+	}
+	// else if power up object's type is equal to passthrough_power_up, then enable the ball to pass through solid bricks and make the color of it a redish color
+	else if (power_up_object_argument.Power_Up_Type == "passthrough_power_up")
+	{
+		Game_Ball->ball_pass_through_solid = true;
+		Game_Ball->game_object_color = glm::vec3(1.0f, 0.5f, 0.5f);
+	}
+	// else if power up object's type is equal to increased_player_size_power_up, then use addition compound assignment to increase the scale_size's x coordinate of the player by 50
+	else if (power_up_object_argument.Power_Up_Type == "increased_player_size_power_up")
+	{
+		Player_Object->game_object_scale_size.x += 50;
+	}
+	// else if power up object's type is equal to confuse_power_up, if confuse within the Post_Processing_Object is not true, then set it to true enabling the confuse effect on screen
+	else if (power_up_object_argument.Power_Up_Type == "confuse_power_up")
+	{
+		if (!Post_Processing_Object->Confuse_Effect)
+			Post_Processing_Object->Confuse_Effect = true;
+	}
+	// else if power up object's type is equal to chaos_power_up, if chaos within the Post_Processing_Object is not true, then set it to true enabling the chaos effect on screen
+	else if (power_up_object_argument.Power_Up_Type == "chaos_power_up")
+	{
+		if (!Post_Processing_Object->Chaos_Effect)
+			Post_Processing_Object->Chaos_Effect = true; 
+	}
+}
+
+// define If_Power_Up_Should_Spawn function that is only local to this C++ file
+bool If_Power_Up_Should_Spawn(unsigned int chance_power_up_can_spawn)
+{
+	// define an unsigned int variable that takes a random value via the built-in C++ function rand and the difference/remainder of it being divided by the
+	// chance_power_up_can_spawn argument/parameter
+	unsigned int random_value = rand() % chance_power_up_can_spawn;
+	// return true if the random value has a value equal to 0 (the remainder is equal to zero which means it is a number that is divisible by the argument/parameter)
+	return random_value == 0;
+}
+
+// define Other_Power_Up_Of_Same_Type_Also_Active function that is only local to this C++ file 
+// takes the address of a standard lib vector of power up objects and a string that compares the power up type as its arguments/parameters 
+
+// this allows for extended time of power ups if someone picked up the same time back to back in a sort amount of time thus extending the power ups time of effect
+bool Other_Power_Up_Of_Same_Type_Also_Active(std::vector<POWER_UP_OBJ>& power_up_objects_argument, std::string power_up_type_argument)
+{
+	// check all the power up objects within the power up objects argument/parameter by using a constant address of a singular power up object
+	// I believe we use a constant version of the power up object here so none of the data within that iterator cannot be manipulated or changed
+	//
+	// I believe that since we are not using a predefined standerd lib vector and the iterator is using adresses locations, we don't need to use a ; since we are not initalizing anything
+	// but just parsing through something that is already pre-existing
+	for (const POWER_UP_OBJ &power_up_object_within_game_iterator : power_up_objects_argument)
+	{
+		// if the power up is activated, and the power up type within a singular power up object matches the power up type provided in the argument/parameter of the function, then return a true value
+		if (power_up_object_within_game_iterator.Power_Up_Activated)
+			if (power_up_object_within_game_iterator.Power_Up_Type == power_up_type_argument)
+				return true; 
+	}
+	// if those conditions are not found, return false
+	return false; 
+}
+
+// Power_Up_Spawn function definition
+void GAME_OBJ::Power_Up_Spawn(IN_GAME_OBJ& brick_within_game)
+{
+	// if power up should spawn function returns true, create a power up object that represents speed and contains the name, color, duration, position of the tile/brick/block it is in, as well as the texture  
+	if (If_Power_Up_Should_Spawn(75))
+		this->Power_Up_Objects.push_back(POWER_UP_OBJ("speed_power_up", glm::vec3(0.5f, 0.5f, 1.0f), 0.0f, brick_within_game.game_object_position, RESOURCE_MANAGER::Texture_Get("speed_power_up")));
+	// if power up should spawn function returns true, create a power up object that represents a sticky ball and contains the name, color, duration, position of the tile/brick/block it is in, as well as the texture  
+	if (If_Power_Up_Should_Spawn(75))
+		this->Power_Up_Objects.push_back(POWER_UP_OBJ("sticky_power_up", glm::vec3(1.0f, 0.5f, 1.0f), 20.0f, brick_within_game.game_object_position, RESOURCE_MANAGER::Texture_Get("sticky_power_up")));
+	// if power up should spawn function returns true, create a power up object that represents passing through solid blocks and contains the name, color, duration, position of the tile/brick/block it is in, as well as the texture  
+	if (If_Power_Up_Should_Spawn(75))
+		this->Power_Up_Objects.push_back(POWER_UP_OBJ("passthrough_power_up", glm::vec3(0.5f, 1.0f, 0.5f), 10.0f, brick_within_game.game_object_position, RESOURCE_MANAGER::Texture_Get("passthrough_power_up")));
+	// if power up should spawn function returns true, create a power up object that represents increased player size and contains the name, color, duration, position of the tile/brick/block it is in, as well as the texture  
+	if (If_Power_Up_Should_Spawn(75))
+		this->Power_Up_Objects.push_back(POWER_UP_OBJ("increased_player_size_power_up", glm::vec3(1.0f, 0.6f, 0.4f), 0.0f, brick_within_game.game_object_position, RESOURCE_MANAGER::Texture_Get("increase_power_up")));
+	
+	// BAD POWERUPS HAVE A MORE FREQUENT CHANCE OF SPAWNING
+	// if power up should spawn function returns true, create a power up object that represents screen confusion and contains the name, color, duration, position of the tile/brick/block it is in, as well as the texture  
+	if (If_Power_Up_Should_Spawn(15))
+		this->Power_Up_Objects.push_back(POWER_UP_OBJ("confuse_power_up", glm::vec3(1.0f, 0.3f, 0.3f), 15.0f, brick_within_game.game_object_position, RESOURCE_MANAGER::Texture_Get("confuse_power_up")));
+	// if power up should spawn function returns true, create a power up object that represents screen chaos and contains the name, color, duration, position of the tile/brick/block it is in, as well as the texture  
+	if (If_Power_Up_Should_Spawn(15))
+		this->Power_Up_Objects.push_back(POWER_UP_OBJ("chaos_power_up", glm::vec3(0.9f, 0.25f, 0.25f), 15.0f, brick_within_game.game_object_position, RESOURCE_MANAGER::Texture_Get("chaos_power_up")));
+}
+
+// Power_Up_Update function definition
+void GAME_OBJ::Power_Up_Update(float delta_time)
+{
+	// check all the power ups in the Power_Up_Object data member
+	//  
+	// I believe that since we are not using a predefined standerd lib vector and the iterator is using adresses locations, we don't need to use a ; since we are not initalizing anything
+	// but just parsing through something that is already pre-existing
+	for (POWER_UP_OBJ &power_up_object_within_game_iterator : this->Power_Up_Objects)
+	{
+		// move the position of the power up in game by taking the product of the power up object's velocity and delta time as well as applying it using compound addition assignment 
+		power_up_object_within_game_iterator.game_object_position += power_up_object_within_game_iterator.game_object_physics_velocity * delta_time;
+		// if the power up object has been activated, slowly lower its value stored in the data member by using compound subtraction assignment by delta time
+		if (power_up_object_within_game_iterator.Power_Up_Activated)
+		{
+			power_up_object_within_game_iterator.Power_Up_Duration -= delta_time;
+
+			// if the duration of the power up object is less than or equal to 0, begin deactivating the power up and returning the game environment back to normal
+			if (power_up_object_within_game_iterator.Power_Up_Duration <= 0.0f)
+			{
+				// set the power up to deactivated
+				power_up_object_within_game_iterator.Power_Up_Activated = false;
+
+				// if the power up was sticky, then begin setting the game back to a normal state
+				if (power_up_object_within_game_iterator.Power_Up_Type == "sticky_power_up")
+				{
+					// if there are no other sticky power ups within all of the power ups, then set ball_restuck data member to false and set the color of the ball back to no hue shift
+					if (!Other_Power_Up_Of_Same_Type_Also_Active(this->Power_Up_Objects, "sticky_power_up"))
+					{
+						Game_Ball->ball_restuck = false;
+						Game_Ball->game_object_color = glm::vec3(1.0f);
+					}
+				}
+				// else if the power up was passthrough_power_up, then begin setting the game back to a normal state
+				else if (power_up_object_within_game_iterator.Power_Up_Type == "passthrough_power_up")
+				{
+					// if there are no other passthrough power ups within all of the power ups, then set ball_pass_through_solid data member to false and set the color of the ball back to no hue shift
+					if (!Other_Power_Up_Of_Same_Type_Also_Active(this->Power_Up_Objects, "passthrough_power_up"))
+					{
+						Game_Ball->ball_pass_through_solid = false;
+						Game_Ball->game_object_color = glm::vec3(1.0f);
+					}
+				}
+				// else if the power up was confuse_power_up, then begin setting the game back to a normal state
+				else if (power_up_object_within_game_iterator.Power_Up_Type == "confuse_power_up")
+				{
+					// if there are no other confuse power ups within all of the power ups, then set the confuse data member within the Post_Processing_Object to false
+					if (!Other_Power_Up_Of_Same_Type_Also_Active(this->Power_Up_Objects, "confuse_power_up"))
+					{
+						Post_Processing_Object->Confuse_Effect = false; 
+					}
+				}
+				// else if the power up was chaos_power_up, then begin setting the game back to a normal state
+				else if (power_up_object_within_game_iterator.Power_Up_Type == "chaos_power_up")
+				{
+					// if there are no other chaos power ups within all of the power ups, then set the confuse data member within the Post_Processing_Object to false
+					if (!Other_Power_Up_Of_Same_Type_Also_Active(this->Power_Up_Objects, "chaos_power_up"))
+					{
+						Post_Processing_Object->Chaos_Effect = false; 
+					}
+				}
+			}
+		}
+	}
+	/* 
+		we now use a lambda function to remove all of the deactivated power ups within the power up objects standard lib vector data member
+	    the erase method is a standard lib vector feature that will get rid of data that is within a vector 
+
+		we use the remove_if function within the erase method to move all the singular power up objects within the end of the Power_Up_Object data member
+		to be deleted from Power_Up_Object
+
+		within the remove_if function, we specify where we want it to start, end, and an iterator that will go through all of the singular power up objects
+		and only move the ones that are destroyed or not active to the end of Power_Up_Object
+
+		within the iterator of remove_if, we specify we want to use a lambda function by using the [] before specifying a data type which will be a constant 
+		address of a POWER_UP_OBJECT, I believe we use a constant version of the power up object here so none of the data within that iterator cannot be manipulated or changed
+
+		within the {} we specify a return condition that if the power up object is destroyed or not activated, then move it to the end of the vector
+		then the erase method from the standard library vector will remove that power up object thus getting it out of the Power_Up_Objects standard library vector data member
+	*/
+	this->Power_Up_Objects.erase(std::remove_if(this->Power_Up_Objects.begin(), this->Power_Up_Objects.end(), [](const POWER_UP_OBJ& power_up_object_lambda_iterator) {return power_up_object_lambda_iterator.game_object_destroyed && !power_up_object_lambda_iterator.Power_Up_Activated; }), this->Power_Up_Objects.end());
 }

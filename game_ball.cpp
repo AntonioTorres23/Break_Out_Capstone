@@ -7,9 +7,9 @@ THE FUNCTIONS THAT ARE STORED IN THE HEADER FILE ARE REALLY ONLY PROTOTYPES
 
 
 // define constructor of GAME_BALL_OBJ when there are no arguments/parameters specified; within the constructor member initalizer list, we create an IN_GAME_OBJECT with no constructor (remember our GAME_BALL_OBJ is derived from IN_GAME_OBJ),
-// our ball_radius data member is set to a value of 12.5f, and our ball_stuck data member is set to true
+// our ball_radius data member is set to a value of 12.5f, our ball_stuck data member is set to true, our ball_restuck data member is set to false, and our ball_pass_through_solid data member is set to false
 // we use a constructor member initalizer list because it allows us to set the values of data members prior to the body of the constructor executing
-GAME_BALL_OBJ::GAME_BALL_OBJ() : IN_GAME_OBJ(), ball_radius(12.5f), ball_stuck(true)
+GAME_BALL_OBJ::GAME_BALL_OBJ() : IN_GAME_OBJ(), ball_radius(12.5f), ball_stuck(true), ball_restuck(false), ball_pass_through_solid(false)
 {
 
 }
@@ -19,11 +19,11 @@ GAME_BALL_OBJ::GAME_BALL_OBJ() : IN_GAME_OBJ(), ball_radius(12.5f), ball_stuck(t
 	position_of_ball_argument, a 2-value glm vector that takes its x and y coordinates as radius_of_ball_argument * 2.0f which represents the game_object_scale_size, ball_sprite_argument as the sprite_texture, a 
 	3-value glm vector with all rgb values set to 1.0f (white) for the game_object_color, and physics_velocity_of_ball_argument for the game_object_physics_velocity
 
-	additionally, within the GAME_BALL_OBJ data members, we set ball_radius as radius_of_ball_argument, and ball_stuck set to true 
+	additionally, within the GAME_BALL_OBJ data members, we set ball_radius as radius_of_ball_argument, ball_stuck set to true, ball_restuck set to false, and ball_pass_through_solid set to false 
 
 */
 // we use a constructor member initalizer list because it allows us to set the values of data members prior to the body of the constructor executing
-GAME_BALL_OBJ::GAME_BALL_OBJ(glm::vec2 position_of_ball_argument, float radius_of_ball_argument, glm::vec2 physics_velocity_of_ball_argument, TEXTURE_2D_OBJ ball_sprite_argument) : IN_GAME_OBJ(position_of_ball_argument, glm::vec2(radius_of_ball_argument * 2.0f, radius_of_ball_argument * 2.0f), ball_sprite_argument, glm::vec3(1.0f), physics_velocity_of_ball_argument), ball_radius(radius_of_ball_argument), ball_stuck(true)
+GAME_BALL_OBJ::GAME_BALL_OBJ(glm::vec2 position_of_ball_argument, float radius_of_ball_argument, glm::vec2 physics_velocity_of_ball_argument, TEXTURE_2D_OBJ ball_sprite_argument) : IN_GAME_OBJ(position_of_ball_argument, glm::vec2(radius_of_ball_argument * 2.0f, radius_of_ball_argument * 2.0f), ball_sprite_argument, glm::vec3(1.0f), physics_velocity_of_ball_argument), ball_radius(radius_of_ball_argument), ball_stuck(true), ball_restuck(false), ball_pass_through_solid(false)
 {
 
 }
@@ -77,7 +77,10 @@ glm::vec2 GAME_BALL_OBJ::Ball_Movement(float delta_time, unsigned int width_of_w
 void GAME_BALL_OBJ::Ball_Reset(glm::vec2 position_of_ball_argument, glm::vec2 physics_velocity_of_ball_argument)
 {
 	// if ball is outside the screen, set the ball's position and velocity data members to the specified argument/parameters within this function; as well as set the ball_stuck data member to true (reseting the ball to its original state)
+	// we also set the ball_restuck and ball_pass_through_solid data members to false
 	this->game_object_position = position_of_ball_argument;
 	this->game_object_physics_velocity = physics_velocity_of_ball_argument;
 	this->ball_stuck = true;
+	this->ball_restuck = false; 
+	this->ball_pass_through_solid = false;
 }

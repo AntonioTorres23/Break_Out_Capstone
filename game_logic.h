@@ -58,7 +58,7 @@ public: // all public members/functions
 	std::vector<GAME_LEVEL_OBJ> Game_Levels; // stores all of our levels within a standard lib vector that take the GAME_LEVEL_OBJ as its data type
 
 	
-	std::vector<POWER_UP_OBJ> power_up_objects; // a standard library vector data member that stores all of the powerups in our game level as a POWER_UP_OBJ
+	std::vector<POWER_UP_OBJ> Power_Up_Objects; // a standard library vector data member that stores all of the powerups in our game level as a POWER_UP_OBJ
 
 	unsigned int Game_Level; // index that specifies a specific level in particular?
 	
@@ -79,8 +79,7 @@ public: // all public members/functions
 
 	void Player_Reset(); // function that resets player position after player has lost ball
 
-	void Power_Up_Generate(IN_GAME_OBJ& brick_within_game); // void member function that will generate a random power up
-
+	void Power_Up_Spawn(IN_GAME_OBJ& brick_within_game); // void member function that will generate a random power up
 
 	void Power_Up_Update(float delta_time); // void member function that will update the power ups in game
 
