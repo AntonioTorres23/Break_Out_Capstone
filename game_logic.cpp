@@ -8,6 +8,13 @@
 #include "generate_particles.h" // include generate_particles header file to allow for GEN_PARTICLES_OBJ to be created in the game_logic c++ file
 #include "post_processing.h" // include post_processing header file to allow for POST_PROCESSING_OBJ to be created in the game_logic c++ file
 
+#include <irrKlang/irrKlang.h> // include this header file to add audio into our game; NOTE: THIS GAME IS OPEN SOURCE AND INTENDED FOR FREE USE
+
+// include the irrklang name space to use all of the functions/data types within this specified library without needing to specify :: parameters, kind of similar to how some c++ devs
+// using namespace std so they do not have to specify std:: whenever calling built-in c++ functions like cout or endl
+using namespace irrklang;
+
+
 #include <algorithm> // include this standard library to use the remove_if function within the Power_Up_Update public member function
 
 #include <iostream>
@@ -31,6 +38,10 @@ GAME_BALL_OBJ *Game_Ball;
 GEN_PARTICLES_OBJ *Generate_Particles;
 // create a POST_PROCESSING_OBJ non-contructed pointer object that will represent the post processing object
 POST_PROCESSING_OBJ *Post_Processing_Object;
+
+// create a ISoundEngine irrklang pointer object that will allow us to play audio in game
+// within the pointer object we call the irrklang function createIrrKlangDevice to create it
+ISoundEngine* Audio = createIrrKlangDevice();
 
 // PROTOTYPE FUNCTION DECLARATIONS for Axis_Aligned_Bounding_Box_Collision_Check function only relevant to this C++ file
 bool Axis_Aligned_Bounding_Box_Collision_Check(IN_GAME_OBJ &first_in_game_obj_argument, IN_GAME_OBJ &second_in_game_obj_argument);
@@ -69,6 +80,9 @@ GAME_OBJ::~GAME_OBJ()
 	delete Game_Ball;
 	delete Generate_Particles;
 	delete Post_Processing_Object;
+
+	// deallocate/destroy the Audio irrKlang object by calling the irrklang function drop
+	Audio->drop();
 }
 
 // game initazlier function definition
@@ -197,6 +211,11 @@ void GAME_OBJ::Initalize_Game()
 
 	// now with our post_processing pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the GEN_PARTICLES_OBJ constructor object to the particle_generator pointer object
 	Post_Processing_Object = new POST_PROCESSING_OBJ(RESOURCE_MANAGER::Shader_Get("post_processing_shader"), this->Width_Of_Screen, this->Height_Of_Screen);
+
+	// play the background music in game with the irrklang function play2D which will play 2D audio (audio that isn't in a 3D environment without attenuation, think of like footsteps in FPS)
+	// in the first parameter/argument, specify the file path of the mp3 file, in the second parameter/argument set a boolean value of true will loop the mp3 once it is finished playing
+	Audio->play2D("Resources/Sound/breakout.mp3", true);
+
 }
 
 // game update of player movement and ball location function definition
@@ -425,6 +444,9 @@ void GAME_OBJ::Axis_Aligned_Bounding_Box_Collisions()
 					// also, attempt to spawn a power up with the brick_game_object_within_game_level_iterator as the argument/parameter
 					// this basically means after a brick is destroyed, begin the process of spawning a power up
 					this->Power_Up_Spawn(brick_game_object_within_game_level_iterator);
+
+					// also play the related sound effect within the resources dierctory, we also specify false because we don't want the audio to loop
+					Audio->play2D("Resources/Sound/bleep.mp3", false);
 				}
 
 				// if tile/brick/brick is solid make screen shake	
@@ -434,6 +456,9 @@ void GAME_OBJ::Axis_Aligned_Bounding_Box_Collisions()
 					time_screen_will_shake = 0.05f;
 					// set the Screen_Shake_Effect boolean public data member to true
 					Post_Processing_Object->Screen_Shake_Effect = true;
+					// also play the related sound effect within the resources dierctory, we also specify false because we don't want the audio to loop
+					// not sure why they made this one a wav file
+					Audio->play2D("Resources/Sound/solid.wav", false);
 				}
 
 				// grab the 2nd value in the ball_and_brick_collision_tuple which is the Ball Bounce Direction enumeration value from the Ball_Bounce_Direction_GLM_Vector within the Axis_Aligned_Bounding_Box_Collision_Check return value
@@ -530,6 +555,9 @@ void GAME_OBJ::Axis_Aligned_Bounding_Box_Collisions()
 				power_up_object_within_game_iterator.game_object_destroyed = true;
 				// set the state of the power up as activated
 				power_up_object_within_game_iterator.Power_Up_Activated = true;
+
+				// also play the related sound effect within the resources dierctory, we also specify false because we don't want the audio to loop
+				Audio->play2D("Resources/Sound/powerup.wav");
 			}
 		}
 	}
