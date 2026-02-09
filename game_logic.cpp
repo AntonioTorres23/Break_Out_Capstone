@@ -214,7 +214,8 @@ void GAME_OBJ::Initalize_Game()
 
 	// play the background music in game with the irrklang function play2D which will play 2D audio (audio that isn't in a 3D environment without attenuation, think of like footsteps in FPS)
 	// in the first parameter/argument, specify the file path of the mp3 file, in the second parameter/argument set a boolean value of true will loop the mp3 once it is finished playing
-	Audio->play2D("Resources/Sound/breakout.mp3", true);
+	Audio->play2D("Resources/Sound/New_Jack_Swing_Song_3_Edited_Sounds.mp3", true);
+	// Audio->play2D("Resources/Sound/breakout.mp3", true);
 
 }
 
