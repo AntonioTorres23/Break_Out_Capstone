@@ -29,6 +29,7 @@
     <ClInclude Include="process_shader.h" />
     <ClInclude Include="process_texture.h" />
     <ClInclude Include="render_sprite.h" />
+    <ClInclude Include="render_text.h" />
     <ClInclude Include="resource_manager.h" />
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
@@ -44,6 +45,7 @@
     <ClCompile Include="process_shader.cpp" />
     <ClCompile Include="process_texture.cpp" />
     <ClCompile Include="render_sprite.cpp" />
+    <ClCompile Include="render_text.cpp" />
     <ClCompile Include="resource_manager.cpp" />
     <ClCompile Include="stb_image_init.cpp" />
   </ItemGroup>
@@ -56,6 +58,8 @@
     <None Include="Resources\Shaders\sprite_test.vert" />
     <None Include="test_fbo.frag" />
     <None Include="test_fbo.vert" />
+    <None Include="text.frag" />
+    <None Include="text.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Textures\dog_smile2.jpg" />

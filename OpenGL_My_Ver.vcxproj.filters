@@ -51,6 +51,9 @@
     <ClInclude Include="power_up.h">
       <Filter>source_code</Filter>
     </ClInclude>
+    <ClInclude Include="render_text.h">
+      <Filter>source_code</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -92,6 +95,9 @@
     <ClCompile Include="post_processing.cpp">
       <Filter>source_code</Filter>
     </ClCompile>
+    <ClCompile Include="render_text.cpp">
+      <Filter>source_code</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\sprite_test.vert">
@@ -116,6 +122,12 @@
       <Filter>source_code\Shaders</Filter>
     </None>
     <None Include="test_fbo.frag">
+      <Filter>source_code\Shaders</Filter>
+    </None>
+    <None Include="text.vert">
+      <Filter>source_code\Shaders</Filter>
+    </None>
+    <None Include="text.frag">
       <Filter>source_code\Shaders</Filter>
     </None>
   </ItemGroup>
