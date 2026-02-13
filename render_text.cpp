@@ -18,7 +18,8 @@ RENDER_TEXT_OBJ::RENDER_TEXT_OBJ(unsigned int width_of_screen_argument, unsigned
 	this->Render_Text_Shader = RESOURCE_MANAGER::Shader_Load("text.vert", "text.frag", nullptr, "text_shader");
 	// set a orthographic projection matrix to the dimensions of the screen from our related arguments statically casted to a float value
 	// notice how we don't provide near and far data for this projection matrix and I think this is because we want the text to appear in the foreground of the game
-	this->Render_Text_Shader.uniform_matrix_4("text_orthographic_projection_matrix", glm::ortho(0.0f, static_cast<float>(width_of_screen_argument), static_cast<float>(height_of_screen_argument), 0.0f));
+	// we also activate the shader with the true value within the 3rd argument/parameter
+	this->Render_Text_Shader.uniform_matrix_4("text_orthographic_projection_matrix", glm::ortho(0.0f, static_cast<float>(width_of_screen_argument), static_cast<float>(height_of_screen_argument), 0.0f), true);
 	// set the texture value for our text image within the fragment shader
 	this->Render_Text_Shader.uniform_integer("texture_image", 0);
 	// generate a vertex array object with our related private data member
@@ -80,10 +81,68 @@ void RENDER_TEXT_OBJ::Text_Generate(std::string type_of_font, unsigned int size_
 	// we disable byte alignment which means we disable the constraint within OpenGL that limits textures
 	// to a size within multiples of 4
 
-	// this function disables that constaint 
+	// this function disables that constraint 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+	// generate a for loop that will generate the standard 128 ascii character set
+	// we use a unsigned Graphics Library byte as our iterator data type
+	for (GLubyte character = 0; character < 128; character++)
+	{
+		// load that single ascii character with the FT_Load_Char function
+		// check if the character can be loaded and if not, send an error message and continue through the for loop
+		// continue means skip this one iteration and move on to the next one
+		// THE FT_LOAD_RENDER flag tells FreeType to create a 8-bit grayscale bitmap access via the font_object->glyph->bitmap
+		if (FT_Load_Char(font_object, character, FT_LOAD_RENDER))
+		{
+			std::cout << "ERROR::FREE_TYPE::FAILED_TO_LOAD_GLYPH" << std::endl;
+			continue;
+		}
+
+		// create a texture object for our character
+		unsigned int individual_character_texture;
+		// generate a texture object with glGenTextures
+		glGenTextures(1, &individual_character_texture);
+		// bind the individual_character_texture as the current texture for configuration
+		glBindTexture(GL_TEXTURE_2D, individual_character_texture);
+		// create a 2D texture with the OpenGL function glTexImage2D, where we only specify only one color for the format which is GL_RED
+		// and the dimensions of the character will be within the bitmap
+		// we specify the texture data as the buffer data stored within the bitmap
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, font_object->glyph->bitmap.width, font_object->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, font_object->glyph->bitmap.buffer);
+		// set the texture filtering options with OpenGL functions
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		// create a Single_Character structure with the data previously defined
+		// we use the bitmap data to gather the size of the character, glyph, and advance 
+		Single_Character single_character = { individual_character_texture, glm::ivec2(font_object->glyph->bitmap.width, font_object->glyph->bitmap.rows), glm::ivec2(font_object->glyph->bitmap_left, font_object->glyph->bitmap_top), font_object->glyph->advance.x };
+		// send this single character to the Multiple Character's public data member via the insert method function
+		// we use the standard library function called pair to pair both the unsigned OpenGL byte with the single_character structure
+		Multiple_Characters.insert(std::pair<char, Single_Character>(character, single_character));
+	}
+	// after the for loop undbind any texture objects
+	glBindTexture(GL_TEXTURE_2D, 0);
+	// destroy all free type objects with the FT_Done_Face and FT_Done_FreeType
+	FT_Done_Face(font_object);
+	FT_Done_FreeType(free_type_library_object);
+}
 
 
+// define the Text_Render function 
+void RENDER_TEXT_OBJ::Text_Render(std::string text_to_be_rendered_on_screen, float text_x_position, float text_y_position, float text_scale_size, glm::vec3 text_color)
+{
+	// activate the Render_Text_Shader public data member
+	this->Render_Text_Shader.Activate();
+	// set the color_of_text uniform 3-value vector with the corresponding parameter/argument within the Render_Text_Shader public data member
+	this->Render_Text_Shader.uniform_vector_3("color_of_text", text_color);
+	// activate GL_TEXTURE0 to diaplay text
+	glActiveTexture(GL_TEXTURE0);
+	// bind the vertex_array_object private data member
+	glBindVertexArray(this->Vertex_Array_Object);
 
+	// create a const_iterator string to loop through all of our 128 ascii characters
+	// we use a const_iterator so we don't modify the elements while iterating
+	std::string::const_iterator character;
+	// create a for loop with character as our iterator and assign it with the beginning of the 
 }
