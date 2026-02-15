@@ -7,7 +7,7 @@
 #include "game_ball.h"    // include game_ball header file to allow for GAME_BALL_OBJ to be created in the game_logic c++ file
 #include "generate_particles.h" // include generate_particles header file to allow for GEN_PARTICLES_OBJ to be created in the game_logic c++ file
 #include "post_processing.h" // include post_processing header file to allow for POST_PROCESSING_OBJ to be created in the game_logic c++ file
-
+#include "render_text.h" // include render_text header file to allow for RENDER_TEXT_OBJ to be created in the game_logic c++ file
 #include <irrKlang/irrKlang.h> // include this header file to add audio into our game; NOTE: THIS GAME IS OPEN SOURCE AND INTENDED FOR FREE USE
 
 // include the irrklang name space to use all of the functions/data types within this specified library without needing to specify :: parameters, kind of similar to how some c++ devs
@@ -18,6 +18,8 @@ using namespace irrklang;
 #include <algorithm> // include this standard library to use the remove_if function within the Power_Up_Update public member function
 
 #include <iostream>
+
+#include <sstream>
 
 // variable only relevant to this c++ file that will store the time that the screen will shake upon a collision with a solid tile/brick/block
 float time_screen_will_shake = 0.0f;
@@ -38,6 +40,8 @@ GAME_BALL_OBJ *Game_Ball;
 GEN_PARTICLES_OBJ *Generate_Particles;
 // create a POST_PROCESSING_OBJ non-contructed pointer object that will represent the post processing object
 POST_PROCESSING_OBJ *Post_Processing_Object;
+// create a RENDER_TEXT_OBJ non-constructed pointer object that will represent the text renderer
+RENDER_TEXT_OBJ* Text_Renderer;
 
 // create a ISoundEngine irrklang pointer object that will allow us to play audio in game
 // within the pointer object we call the irrklang function createIrrKlangDevice to create it
@@ -209,8 +213,14 @@ void GAME_OBJ::Initalize_Game()
 	// now with our particle_generator pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the GEN_PARTICLES_OBJ constructor object to the particle_generator pointer object
 	Generate_Particles = new GEN_PARTICLES_OBJ(RESOURCE_MANAGER::Shader_Get("particle_shader"), RESOURCE_MANAGER::Texture_Get("particle_object"), 500);
 
-	// now with our post_processing pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the GEN_PARTICLES_OBJ constructor object to the particle_generator pointer object
+	// now with our post_processing pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the POST_PROCESSING_OBJ constructor object to the post_processing pointer object
 	Post_Processing_Object = new POST_PROCESSING_OBJ(RESOURCE_MANAGER::Shader_Get("post_processing_shader"), this->Width_Of_Screen, this->Height_Of_Screen);
+
+	// now with our render_text pointer object we created earlier, dynamically allocate memory from the heap with the new keyword to return an address of the RENDER_TEXT_OBJ constructor object to the text_renderer pointer object
+	Text_Renderer = new RENDER_TEXT_OBJ(this->Width_Of_Screen, this->Height_Of_Screen);
+
+	// load the desired font and font size to use for text in game
+	Text_Renderer->Text_Generate("C:/Windows/Fonts/OCRAEXT.TTF", 24);
 
 	// play the background music in game with the irrklang function play2D which will play 2D audio (audio that isn't in a 3D environment without attenuation, think of like footsteps in FPS)
 	// in the first parameter/argument, specify the file path of the mp3 file, in the second parameter/argument set a boolean value of true will loop the mp3 once it is finished playing
@@ -245,11 +255,19 @@ void GAME_OBJ::Update_Game(float delta_time)
 			Post_Processing_Object->Screen_Shake_Effect = false;
 	}
 
-	// if the ball's y positional value is greater than or equal to the screen's dimensions, the player has lost and restart the level
+	// if the ball's y positional value is greater than or equal to the screen's dimensions, the player has lost a life
 	if (Game_Ball->game_object_position.y >= this->Height_Of_Screen)
 	{
-		// call the related member functions that reset the level and player
-		this->Level_Reset();
+		// deincrement the Player_Lives if the ball goes out of bounds
+		--this->Player_Lives;
+
+		// if the player loses all 3 of thier lives reset the entire level and take the player to the game menu
+		if (this->Player_Lives == 0)
+		{
+			this->Level_Reset();
+			this->Game_State = MENU_GAME;
+		}
+		// call the related member functions that reset the player
 		this->Player_Reset();
 	}
 }
@@ -348,6 +366,8 @@ void GAME_OBJ::Render_Game()
 
 	if (this->Game_State == ACTIVE_GAME)
 	{
+
+
 			// first set up the post processing effects with the related public member function
 			Post_Processing_Object->Start_Render();
 
@@ -384,6 +404,16 @@ void GAME_OBJ::Render_Game()
 			Post_Processing_Object->Finish_Render();
 			// render the screen-filled quad with the framebuffer color buffer texture attachment, include glfwGetTime as the post_processing_time
 			Post_Processing_Object->Render_Post_Processing(glfwGetTime());
+
+
+			// create a string stream to read the lives directly fro the Player_Lives public data member
+			std::stringstream life;
+
+			life << this->Player_Lives;
+
+			// render lives on screen
+			Text_Renderer->Text_Render("Lives:" + life.str(), 10.0f, 10.0f, 1.0f);
+
 	}
 
 
@@ -401,6 +431,9 @@ void GAME_OBJ::Level_Reset()
 		this->Game_Levels[this->Game_Level].Level_Load("Resources/Levels/space_invader_level.level", this->Width_Of_Screen, this->Height_Of_Screen / 2);
 	else if (this->Game_Level == 3)
 		this->Game_Levels[this->Game_Level].Level_Load("Resources/Levels/bounce_level.level", this->Width_Of_Screen, this->Height_Of_Screen / 2);
+
+	// also, set the player's lives back to 3
+	this->Player_Lives = 3;
 }
 
 // player reset function definition

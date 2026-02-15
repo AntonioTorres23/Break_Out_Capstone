@@ -15,7 +15,7 @@ RENDER_TEXT_OBJ::RENDER_TEXT_OBJ(unsigned int width_of_screen_argument, unsigned
 {
 	// load the shader within the constructor with the resource manager static function and providing the related shader files
 	// this will be stored within the Render_Text_Shader public data member
-	this->Render_Text_Shader = RESOURCE_MANAGER::Shader_Load("text.vert", "text.frag", nullptr, "text_shader");
+	this->Render_Text_Shader = RESOURCE_MANAGER::Shader_Load("Resources/Shaders/text.vert", "Resources/Shaders/text.frag", nullptr, "text_shader");
 	// set a orthographic projection matrix to the dimensions of the screen from our related arguments statically casted to a float value
 	// notice how we don't provide near and far data for this projection matrix and I think this is because we want the text to appear in the foreground of the game
 	// we also activate the shader with the true value within the 3rd argument/parameter
@@ -144,5 +144,74 @@ void RENDER_TEXT_OBJ::Text_Render(std::string text_to_be_rendered_on_screen, flo
 	// create a const_iterator string to loop through all of our 128 ascii characters
 	// we use a const_iterator so we don't modify the elements while iterating
 	std::string::const_iterator character;
-	// create a for loop with character as our iterator and assign it with the beginning of the 
+	// create a for loop with character as our iterator and assign it with the first character within the text_to_be_rendered_on_screen argument/parameter
+	// then with the character not being equal to the last character within the argument/parameter, iterate through the characters
+	for (character = text_to_be_rendered_on_screen.begin(); character != text_to_be_rendered_on_screen.end(); character++)
+	{
+		// create a single chracter object that is equal to the data that is located within whatever character is found within our iterator
+		Single_Character character_in_text = Multiple_Characters[*character];
+
+		// get the x-coordinate position of the character_in_text object by taking its bearing x coordinate value multiplied by the text_scale_size argument/parameter
+		// then take the value of that product and add it by the text_x_position argument/parameter
+		float character_in_text_x_position =  text_x_position + character_in_text.Glyph_Bearing.x * text_scale_size;
+		/* 		
+			for the y - coordiante position of the character_intext object, its a bit different; first, because we are using an orthographic projection matrix, all of 
+			our y coordiantes are going from top to bottom with its origin point 0.0 representing the top of the screen 
+
+			we need to get the top of the actual character which free type does not offer, however there are a few characters that do reach this top space are H, T, or X
+			if we take the difference between one of these character's bearing y coordinate value and our current character_in_text's bearing y value, we can confine the
+			top of the character_in_text's top edge
+
+			we also scale this difference by the text_scale_size argument/parameter
+
+			same idea applies where we take the product and add it by the text_y_position argument/parameter
+		*/
+		float character_in_text_y_position = text_y_position + (this->Multiple_Characters['H'].Glyph_Bearing.y - character_in_text.Glyph_Bearing.y) * text_scale_size;
+
+		// now to calculate the character_in_text's width we take the x coordinate glyph size of the character and mulutiply it by the text_scale_size argument/parameter
+		float character_in_text_width = character_in_text.Glyph_Size.x * text_scale_size;
+		// same idea applies as prior but this time we use the character_in_text's y coordinate glyph size 
+		float character_in_text_height = character_in_text.Glyph_Size.y * text_scale_size;
+
+		// now create a 2D array with our newly calculated vertex data for this singular character which will be sent to the vertex buffer object to represent the 2D quad of our character
+		// we also take the texture coordinates for our character texture from the bitmap
+		// notice how we are applying some of our width and height values to certain vectors here
+		float character_in_text_vertex_data[6][4] =
+		{
+			// 1st triangle                                                                                                   top-left texture coordinate
+			{character_in_text_x_position, character_in_text_y_position + character_in_text_height,                           0.0f, 1.0f},
+			//                                                                                                                bottom-right texture coordinate
+			{character_in_text_x_position + character_in_text_width, character_in_text_y_position,                            1.0f, 0.0f},
+			//                                                                                                                bottom-left texture coordiante
+			{character_in_text_x_position, character_in_text_y_position,                                                      0.0f, 0.0f}, 
+			// 2nd triangle                                                                                                   top-left texture coordinate
+			{character_in_text_x_position, character_in_text_y_position + character_in_text_height,                           0.0f, 1.0f},
+			//																						                          top-right texture coordinate			                               
+			{character_in_text_x_position + character_in_text_width, character_in_text_y_position + character_in_text_height, 1.0f, 1.0f},
+			//                                                                                                                bottom-right texture coordinate
+			{character_in_text_x_position + character_in_text_width, character_in_text_y_position,                            1.0f, 0.0f}
+
+		};
+
+
+		// bind the texture of the character from the bit map on top of the 2D quad
+		glBindTexture(GL_TEXTURE_2D, character_in_text.Glyph_Texture_ID);
+		// update the Vertex Buffer Object buffer data with our character_in_text_vertex_data
+		glBindBuffer(GL_ARRAY_BUFFER, this->Vertex_Buffer_Object);
+		// use glBufferSubData to substitute the null data that we had configured at first prior
+		// we also take the size of the character_in_text_vertex_data 2D array
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(character_in_text_vertex_data), character_in_text_vertex_data);
+		// unbind the text vertex buffer object
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		// draw the character quad on screen
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		// use bitshifting to advance the cursors for the next character
+		// use addition compound assignment on the character_in_text_x_position for this as well as multiply the bitshift value by the text_scale_size argument/parameter
+		// bitshiting by 6 gets the value in pixels; 1/64th * 2 to the power of 6 equals 64
+		text_x_position += (character_in_text.Glyph_Advance >> 6) * text_scale_size;
+	}
+	// after the for loop, unbind the vertex array and any currently bound textures
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 }

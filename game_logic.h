@@ -61,6 +61,8 @@ public: // all public members/functions
 	std::vector<POWER_UP_OBJ> Power_Up_Objects; // a standard library vector data member that stores all of the powerups in our game level as a POWER_UP_OBJ
 
 	unsigned int Game_Level; // index that specifies a specific level in particular?
+
+	unsigned int Player_Lives; // stores the amount of lives that the player has in game
 	
 	GAME_OBJ(unsigned int width_of_window, unsigned int height_of_window); // constructor with arguments required to create a GAME_OBJ object
 	~GAME_OBJ(); // deconstructor of GAME_OBJ
