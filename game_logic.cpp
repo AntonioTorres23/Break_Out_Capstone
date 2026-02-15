@@ -24,7 +24,6 @@ using namespace irrklang;
 // variable only relevant to this c++ file that will store the time that the screen will shake upon a collision with a solid tile/brick/block
 float time_screen_will_shake = 0.0f;
 
-
 /*
 NOTICE HOW WE'RE DEFINING THE FUNCTIONS THAT ARE STORED WITHIN THE GAME_OBJ CLASS/OBJECT, SO IN THE C++ FILE HERE WE'RE DEFINING THE ACTUAL SOURCE CODE
 THE FUNCTIONS THAT ARE STORED IN THE HEADER FILE ARE REALLY ONLY PROTOTYPES
@@ -220,7 +219,10 @@ void GAME_OBJ::Initalize_Game()
 	Text_Renderer = new RENDER_TEXT_OBJ(this->Width_Of_Screen, this->Height_Of_Screen);
 
 	// load the desired font and font size to use for text in game
+	// MUST PROVIDE FULL WINDOWS PATH TO ACCESS FONTS
 	Text_Renderer->Text_Generate("C:/Windows/Fonts/OCRAEXT.TTF", 24);
+
+	this->Player_Lives = 3;
 
 	// play the background music in game with the irrklang function play2D which will play 2D audio (audio that isn't in a 3D environment without attenuation, think of like footsteps in FPS)
 	// in the first parameter/argument, specify the file path of the mp3 file, in the second parameter/argument set a boolean value of true will loop the mp3 once it is finished playing
@@ -407,9 +409,7 @@ void GAME_OBJ::Render_Game()
 
 
 			// create a string stream to read the lives directly fro the Player_Lives public data member
-			std::stringstream life;
-
-			life << this->Player_Lives;
+			std::stringstream life; life << this->Player_Lives;
 
 			// render lives on screen
 			Text_Renderer->Text_Render("Lives:" + life.str(), 10.0f, 10.0f, 1.0f);
