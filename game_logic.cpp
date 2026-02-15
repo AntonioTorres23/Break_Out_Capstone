@@ -267,6 +267,7 @@ void GAME_OBJ::Update_Game(float delta_time)
 		if (this->Player_Lives == 0)
 		{
 			this->Level_Reset();
+			// THIS BRINGS YOU TO THE IN GAME MENU; NOT IMPLEMENTED YET WILL RENDER BLACK SCREEN FOR NOW
 			this->Game_State = MENU_GAME;
 		}
 		// call the related member functions that reset the player
