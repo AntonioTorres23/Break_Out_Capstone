@@ -172,6 +172,6 @@ bool GAME_LEVEL_OBJ::Level_Complete()
 	{
 		if (!tiles_in_game_objects_bricks.game_object_destroyed && !tiles_in_game_objects_bricks.game_object_solid)
 			return false;
-		return true;
 	}
+	return true;
 }

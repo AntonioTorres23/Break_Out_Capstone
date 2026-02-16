@@ -206,9 +206,11 @@ void glfw_callback_keyboard_input(GLFWwindow* glfw_window_argument, int input, i
 			game_breakout.Key_Pressed_Buffer[input] = true; 
 		}
 		// else if our input_action detects the key was released, set our Key_Pressed_Buffer boolean array data member within the GAME_OBJ to false; and store the key within the Key_Pressed_Buffer array data member of the GAME_OBJ using input as the index
+		// in addition, set our Processed_Keys boolean array data member within GAME_OBJ to false and store the key within the Processed_Key array data member of the GAME_OBJ using input as the index
 		else if (input_action == GLFW_RELEASE)
 		{
 			game_breakout.Key_Pressed_Buffer[input] = false;
+			game_breakout.Processed_Keys[input] = false;
 		}
 	}
 

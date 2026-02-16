@@ -191,6 +191,9 @@ void GAME_OBJ::Initalize_Game()
 	// i.e. Index 0: level_one aka standard_level Index 1: level_two aka gaps_level
 	this->Game_Level = 0; 
 
+	this->Game_State = MENU_GAME;
+
+
 	// create a 2-value GLM vector that will store the position of the player object within the screen
 	// this will be calculated by taking the GAME_OBJ's data members Width_Of_Screen, Height_Of_Screen and subtracting those values by the respective SCALE_SIZE_OF_PLAYER 2-value GLM vector coordinates
 	// with subtracting half of the Width_Of_Screen by half of the SCALE_SIZE_OF_PLAYER.x for the x value and subtracting Height_Of_Screen by SCALE_SIZE_OF_PLAYER.y with no changes to the original values 
@@ -273,6 +276,16 @@ void GAME_OBJ::Update_Game(float delta_time)
 		// call the related member functions that reset the player
 		this->Player_Reset();
 	}
+	// if the state of the game is active and all of the destroyable tiles/blocks/bricks are completed, reset the player and level set the post processing chaos effect to true and
+	// set the game to an enumeration state of being won
+	if (this->Game_State == ACTIVE_GAME && this->Game_Levels[this->Game_Level].Level_Complete())
+	{
+		this->Player_Reset();
+		this->Level_Reset();
+		Post_Processing_Object->Chaos_Effect = true;
+		this->Game_State = WIN_GAME;
+	}
+
 }
 
 // process player input function definition
@@ -323,6 +336,54 @@ void GAME_OBJ::Process_User_Input(float delta_time)
 		}
 
 	}
+
+	// if the state of the game enumeration is considered a menu state, process user input
+	if (this->Game_State == MENU_GAME)
+	{
+		// if the player has presssed the enter button and key has not been processed, start the game/put the game in an active state and set the key to being processed (set to true)
+		// this forces the key to wait until the key has been released to begin reprocessing the given input
+		if (this->Key_Pressed_Buffer[GLFW_KEY_ENTER] && !this->Processed_Keys[GLFW_KEY_ENTER])
+		{
+			this->Game_State = ACTIVE_GAME;
+			this->Processed_Keys[GLFW_KEY_ENTER] = true;
+		}
+		// if the player has pressed the w key, increment and cycle through the availible levels
+		// we use the remainder operator to keep the Game_Level variable within the range of 0 to 3
+		// basically, the remainder operator determines the left over numbers upon being divisible 
+		// by 4, for example 0 % 4 = 0 because 0 divided by 4 is 0, 1 % 4 is 1 because 4 fits into
+		// 1 0 times and the remainder is the dividend which is 1, 2 % 4 = 2 because 4 fits into
+		// 2 0 times and the remainder is the dividend which is 2
+		if (this->Key_Pressed_Buffer[GLFW_KEY_W] && !this->Processed_Keys[GLFW_KEY_W])
+		{
+			this->Game_Level = (this->Game_Level + 1) % 4;
+			this->Processed_Keys[GLFW_KEY_W] = true;
+		}
+		// if the player has pressed the s key, deincrement and cycle through the availible levels 
+		// else if the the levels are not greater than 0, set the level back to the top at 3
+		if (this->Key_Pressed_Buffer[GLFW_KEY_S] && !this->Processed_Keys[GLFW_KEY_S])
+		{
+			if (this->Game_Level > 0)
+				--this->Game_Level;
+			else
+				this->Game_Level = 3;
+			this->Processed_Keys[GLFW_KEY_S] = true; 
+
+		}
+	}
+
+	// if the state of the game enumeration is considered a won state, process user input
+	if (this->Game_State == WIN_GAME)
+	{
+		// if the player has pressed the enter key, process the key and set it to a state of true
+		// set the chaos effect indicating a win to false, and bring the player back to the menu
+		// by setting the game state to GAME_MENU
+		if (this->Key_Pressed_Buffer[GLFW_KEY_ENTER])
+		{
+			this->Processed_Keys[GLFW_KEY_ENTER] = true;
+			Post_Processing_Object->Chaos_Effect = false; 
+			this->Game_State = MENU_GAME;
+		}
+	}
 }
 
 // render game onto player screen function definition
@@ -365,9 +426,9 @@ void GAME_OBJ::Render_Game()
 		Hopefully that makes sense
 	*/
 
-	// if the state of the game enumeration is considered active, render the level
+	// if the state of the game enumeration is considered active or in the menu, or won, render the level
 
-	if (this->Game_State == ACTIVE_GAME)
+	if (this->Game_State == ACTIVE_GAME || this->Game_State == MENU_GAME || this->Game_State == WIN_GAME)
 	{
 
 
@@ -417,6 +478,19 @@ void GAME_OBJ::Render_Game()
 
 	}
 
+	// if the state of the game enumeration is set to menu, display the menu information
+	if (this->Game_State == MENU_GAME)
+	{
+		Text_Renderer->Text_Render("Start Game: Enter", 250.0f, Height_Of_Screen / 2, 1.0f);
+		Text_Renderer->Text_Render("W: CYCLE UP THROUGH LEVEL S: CYCLE DOWN THROUGH LEVEL", 100.0f, Height_Of_Screen / 2 + 40.0f, 0.75f, glm::vec3(1.0f, 0.0f, 0.0f));
+	}
+
+	// if the state of the game enumeration is set to GAME_WIN, display the text stating the fact
+	if (this->Game_State == WIN_GAME)
+	{
+		Text_Renderer->Text_Render("GAME FINISHED", 320.0, Height_Of_Screen / 2 - 20.0, 1.0, glm::vec3(0.0f, 1.0f, 0.0f));
+		Text_Renderer->Text_Render("Press Enter to Replay | Or Escape to Exit", 130.0, Height_Of_Screen / 2, 1.0, glm::vec3(1.0f, 1.0f, 0.0f));
+	}
 
 }
 

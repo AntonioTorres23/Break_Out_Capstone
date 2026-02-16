@@ -14,7 +14,8 @@ enum CurrentStateOfGame
 {
 	ACTIVE_GAME,
 	MENU_GAME,
-	WINDOW_GAME
+	WINDOW_GAME,
+	WIN_GAME
 };
 
 // Enumerations that represent the ball's bouncing direction off an object's AABB once a collision occurs
@@ -52,6 +53,7 @@ public: // all public members/functions
 	
 	CurrentStateOfGame	Game_State; // current state of game enumeration stored in Game_State var
 	bool				Key_Pressed_Buffer[1024]; // buffer that stores key's that are pressed by player
+	bool				Processed_Keys[1024];    //  buffer that stores key's that have been processed
 	unsigned int		Width_Of_Screen, Height_Of_Screen; // stores the width and height of the actual game window
 
 
